@@ -3,7 +3,7 @@ import { Button } from "./Button";
 
 export const Network = () => {
   const listOfNetworks = ["Network 1", "Network 2", "Network 3"];
-  const initialStatuses = listOfNetworks.map(() => "UP");
+  const initialStatuses = listOfNetworks.map(() => "Down");
   const [statuses, setStatuses] = useState(initialStatuses);
 
   const handleStatus = (index: unknown) => {
