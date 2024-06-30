@@ -18,7 +18,7 @@ export const Network = () => {
   return (
       <div>
         {listOfNetworks.map((network, index) => (
-          <div className="flex justify-center items-center gap-4 m-5" key={
+          <div className="flex justify-center items-center gap-4 m-5 flex-wrap " key={
             network
           }>
           <div className="flex gap-4 w-60">
