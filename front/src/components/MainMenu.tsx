@@ -2,6 +2,11 @@ import { useEffect } from "react";
 import { Menu } from "../components/Menu";
 import { Network } from "../components/Network";
 import { useMenu } from "../hooks/useMenu";
+import  EditNetwork  from "./EditNetwork";
+import MenuList from "./Alloc";
+
+
+
 
 export const MainMenu = () => {
   const { menuItems, setMenuItems } = useMenu("NODE");
@@ -16,7 +21,9 @@ export const MainMenu = () => {
       <Menu typeofMenu={menuItems} changeMenu={changeMenu} />
       {menuItems === "NODE" && <Network />}
       {menuItems === "FAUCET" && <div>FAUCET</div>}
-      {menuItems === "ALLOC" && <div>ALLOC</div>}
+      {menuItems === "ALLOC" && <div><MenuList  setMenuItems={setMenuItems} /></div>}
+      {menuItems === "OPERATION" && <div><EditNetwork /></div>}
+      
     </main>
   );
 };
