@@ -1,29 +1,35 @@
 import { Request, Response } from 'express';
 import { exec } from 'child_process';
 import fs from 'fs/promises';
-import { createContainer, startContainer, stopContainer, removeContainer, listContainers } from './dockerService';
+import { promisify } from 'util';
+import { startContainer, stopContainer, listContainers } from './dockerService';
+
+const execAsync = promisify(exec);
 
 interface Node {
   name: string;
   type: string;
   ip: string;
   port?: number;
+  address: string
 }
 
 interface Alloc {
-  [address: string]: { balance: string };
+  address: string,
+  balance: string ;
 }
 
 async function createNetwork(req: Request, res: Response) {
-  const { id, chainId, subnet, ipBootnode, alloc, nodes }: { id: string, chainId: string, subnet: string, ipBootnode: string, alloc: Alloc, nodes: Node[] } = req.body;
-
+  const { id, chainId, subnet, ipBootnode, alloc, nodes }: { id: string, chainId: string, subnet: string, ipBootnode: string, alloc: Alloc[], nodes: Node[] } = req.body;
+  
   // Create accounts
-  createAccounts(chainId, nodes);
+  await createAccounts(chainId, nodes);
 
   const genesis = getGenesis(chainId, alloc, nodes);
 
   // Genesis filename
-  const filename = `genesis${chainId}.json`;
+  const genesisPath = `${process.cwd()}\\data\\${chainId}`
+  const filename = `${genesisPath}\\genesis${chainId}.json`;
   await fs.writeFile(filename, JSON.stringify(genesis, null, 2));
 
   // Initialize network
@@ -32,7 +38,8 @@ async function createNetwork(req: Request, res: Response) {
 
   // Start miners
 
-  res.status(200).send(`Genesis file created: ${filename}`);
+  //res.status(200).send(`Genesis file created: ${filename}`);
+  res.status(200).send(`Genesis file created`);
 }
 
 async function stopNetwork(req: Request, res: Response) {
@@ -132,28 +139,44 @@ async function getGroupedNetworks() {
   return networksMap;
 }
 
-const createAccounts = (chainId: string, nodes: Node[]) => {
-  nodes.forEach((node, index) => {
+
+const createAccounts = async (chainId: string, nodes: Node[]): Promise<void> => {
+  for (let index = 0; index < nodes.length; index++) {
+    const node = nodes[index];
     const nodeIndex = index + 1;
     const nodeName = `node-${node.type}-${nodeIndex}`;
-    const keystorePath = `${process.cwd()}/data/${chainId}/${nodeName}/keystore`;
+    const keystorePath = `${process.cwd()}\\data\\${chainId}\\${nodeName}\\keystore`;
+    const pwdPath = `${process.cwd()}\\data\\pwd.txt`;
 
     // Docker command to create the account
-    const dockerCommand = `docker run --rm -it -v ${keystorePath}:/data/${chainId}/${nodeName} ethereum/client-go:v1.13.15 account new --keystore /data/${chainId}/${nodeName}`;
-
-    // Execute Docker command
-    exec(dockerCommand, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error creating account for ${nodeName}: ${error}`);
-        return;
+    const dockerCommand = `docker run --rm -v "${keystorePath}:/data/${chainId}/${nodeName}" -v "${pwdPath}:/data/pwd.txt" ethereum/client-go:v1.13.15 account new --password /data/pwd.txt --keystore /data/${chainId}/${nodeName}`;
+    
+    try {
+      const { stdout } = await execAsync(dockerCommand);
+      const addressMatch = stdout.match(/0x[a-fA-F0-9]{40}/);
+      if (addressMatch) {        
+        node.address = addressMatch[0].startsWith('0x') ? addressMatch[0].substring(2) : addressMatch[0];
+        console.log(`Account created for ${nodeName}: ${node.address}`);
+      } else {
+        console.error(`Address not found in output for ${nodeName}`);
       }
-      console.log(`Account created for ${nodeName}: ${stdout}`);
-    });
-  });
+    } catch (error) {
+      console.error(`Error creating account for ${nodeName}: ${error}`);
+    }
+  }
 };
 
-const getGenesis = (chainId: string, alloc: Alloc, nodes: Node[]) => {
+const getGenesis = (chainId: string, alloc: Alloc[], nodes: Node[]) => {
   const extradata = generateExtradata(nodes);
+  
+  //Remove 0x if the alloc.address has it
+  alloc = alloc.map(a => ({ ...a, address: a.address.startsWith('0x') ? a.address.substring(2) : a.address }));
+  const allocations = addMinerAllocations(alloc, nodes)
+  
+  const mappedAllocations = allocations.reduce((acc, alloc) => {
+    acc[alloc.address] = { balance: alloc.balance };
+    return acc;
+  }, {} as { [address: string]: { balance: string } });
 
   return {
     config: {
@@ -175,13 +198,13 @@ const getGenesis = (chainId: string, alloc: Alloc, nodes: Node[]) => {
     difficulty: "1",
     gasLimit: "8000000",
     extradata: extradata,
-    alloc: alloc
+    alloc: mappedAllocations
   };
 };
 
 const generateExtradata = (nodes: Node[]) => {
   // Filter validator nodes (type 'miner')
-  const miners = nodes.filter(node => node.type === 'miner').map(node => node.name);
+  const miners = nodes.filter(node => node.type === 'miner').map(node => node.address);
 
   // Generate the `extradata` field required by the Clique protocol for validators.
   // prefix 64 '0'
@@ -201,6 +224,21 @@ const getContainersByNetwork = (containers: any[], networkId: string) => {
     return networkSettings.NetworkID === networkId;
   });
 };
+
+const addMinerAllocations = (alloc: Alloc[], nodes: Node[]): Alloc[] => {
+  const miners = nodes.filter(node => node.type === 'miner')
+
+  for (let index = 0; index < miners.length; index++) {
+    const miner = miners[index];
+    const item:Alloc = {
+      address: miner.address,
+      balance: '100000000000000000000'
+    }
+    alloc.push(item)
+  }
+  return alloc;
+};
+
 
 export {
   createNetwork,
