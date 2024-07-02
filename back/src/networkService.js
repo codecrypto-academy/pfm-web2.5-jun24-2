@@ -67,7 +67,27 @@ async function startNetwork(req, res) {
 
 async function listNetworks(req, res) {
   const containers = await listContainers();
-  res.status(200).json(containers);
+  const networksMap = {};
+
+  containers.forEach(container => {
+    const networkName = Object.keys(container.NetworkSettings.Networks)[0];
+
+    if (!networksMap[networkName]) {
+      networksMap[networkName] = [];
+    }
+
+    networksMap[networkName].push({
+      Name: container.Names[0],
+      Status: container.Status,
+      State: container.State
+    });
+  });
+
+  const value =  Object.keys(networksMap).map(network => ({
+    Network: network,
+    Nodos: networksMap[network]
+  }));
+  res.status(200).json(value);
 }
 
 module.exports = {
