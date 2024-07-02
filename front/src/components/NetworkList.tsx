@@ -1,45 +1,48 @@
-// Definición del componente NetworkList que gestiona la lista de redes
 import { useState } from "react";
-
+/* 
+Definición del componente NetworList, define las caracteristicas de la red 
+*/
  export function NetworkList() {
     const [networks, setNetworks] = useState([
       {
         id: "",
         status: "",
         chain: "",
-        subnet: "172.16.200.0/24",
-        bootnode: "172.16.200.10",
+        subnet: "",
+        bootnode: "",
       },
       {
         id: "",
         status: "",
         chain: "",
-        subnet: "172.16.100.0/24",
-        bootnode: "172.16.100.10",
+        subnet: "",
+        bootnode: "",
       },
       {
         id: "",
         status: "",
         chain: "",
-        subnet: "172.16.100.0/24",
-        bootnode: "172.16.100.10",
+        subnet: "",
+        bootnode: "",
       },
       {
         id: "",
         status: "",
         chain: "",
-        subnet: "172.16.100.0/24",
-        bootnode: "172.16.100.10",
+        subnet: "",
+        bootnode: "",
       },
       {
         id: "",
         status: "",
         chain: "",
-        subnet: "172.16.200.0/24",
-        bootnode: "172.16.200.10",
+        subnet: "",
+        bootnode: "",
       },
     ]);
-
+ /*
+ Definición de botones para añadir y borrar de la lista de NetworkList
+ */
     const handleDelete = (index) => {
       const newNetworks = networks.filter((_, i) => i !== index);
       setNetworks(newNetworks);
@@ -51,8 +54,8 @@ import { useState } from "react";
           id: "",
           status: "",
           chain: "",
-          subnet: "172.16.200.0/24",
-          bootnode: "172.16.200.10",
+          subnet: "",
+          bootnode: "",
 
       };
       setNetworks([...networks, newNetwork]);
@@ -60,15 +63,15 @@ import { useState } from "react";
  
   
     return (
-      <table className="table table-dark table-striped">
+      <table className="table table-dark table-striped" >
         <thead>
           <tr>
-            <th>Options</th>
-            <th>Status</th>
-            <th>ID</th>
-            <th>Chain</th>
-            <th>Subnet</th>
-            <th>Bootnode</th>
+            <th class="pr-5">Options </th>
+            <th class="pr-5">Status </th>
+            <th class="pr-5">ID </th>
+            <th class="pr-5">Chain </th>
+            <th class="pr-5">Subnet </th>
+            <th class="pr-5">Bootnode </th>
           </tr>
         </thead>
         <tbody>

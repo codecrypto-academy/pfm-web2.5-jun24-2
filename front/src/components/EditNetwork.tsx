@@ -45,7 +45,7 @@ const EditNetwork = () => {
       <h3>Allocation</h3>
       {allocations.map((allocation, index) => (
         <div key={index} className="input-group mb-3">
-          <button className="btn btn-danger" onClick={() => removeAllocation(index)}>X</button>
+          <button className="btn btn-danger" class="pr-5"  onClick={() => removeAllocation(index)}>X</button>
           <input type="text" className="form-control" value={allocation} onChange={(e) => {
             const newAllocations = [...allocations];
             newAllocations[index] = e.target.value;
@@ -58,7 +58,7 @@ const EditNetwork = () => {
       <h3>Nodes</h3>
       {nodes.map((node, index) => (
         <div key={index} className="d-flex mb-3">
-          <button className="btn btn-danger me-2" onClick={() => removeNode(index)}>X</button>
+          <button className="btn btn-danger me-2" class="pr-5" onClick={() => removeNode(index)}>X</button>
           <select className="form-select me-2" value={node.type} onChange={(e) => {
             const newNodes = [...nodes];
             newNodes[index].type = e.target.value;
