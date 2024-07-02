@@ -1,27 +1,41 @@
-const { createContainer, startContainer, stopContainer, removeContainer, listContainers } = require('./dockerService');
+import { Request, Response } from 'express';
+import { exec } from 'child_process';
+import fs from 'fs/promises';
+import { createContainer, startContainer, stopContainer, removeContainer, listContainers } from './dockerService';
 
-async function createNetwork(req, res) {
-  const { id, chainId, subnet, ipBootnode, alloc, nodos } = req.body;
+interface Node {
+  name: string;
+  type: string;
+  ip: string;
+  port?: number;
+}
 
-  //crear las cuentas
-  const accounts = createAccounts(chainId, nodos);
+interface Alloc {
+  [address: string]: { balance: string };
+}
 
-  const genesis = getGenesis(chainId, alloc, nodos);
+async function createNetwork(req: Request, res: Response) {
+  const { id, chainId, subnet, ipBootnode, alloc, nodes }: { id: string, chainId: string, subnet: string, ipBootnode: string, alloc: Alloc, nodes: Node[] } = req.body;
+
+  // Create accounts
+  createAccounts(chainId, nodes);
+
+  const genesis = getGenesis(chainId, alloc, nodes);
 
   // Genesis filename
   const filename = `genesis${chainId}.json`;
   await fs.writeFile(filename, JSON.stringify(genesis, null, 2));
 
-  // init network
+  // Initialize network
 
-  //init node
+  // Initialize node
 
-  //start miners
+  // Start miners
 
   res.status(200).send(`Genesis file created: ${filename}`);
 }
 
-async function stopNetwork(req, res) {
+async function stopNetwork(req: Request, res: Response) {
   const { id } = req.params;
 
   if (!id) {
@@ -35,11 +49,7 @@ async function stopNetwork(req, res) {
       return res.status(404).json({ error: 'No containers found' });
     }
 
-    const containersToStop = containers.filter(container => {
-      const networkName = Object.keys(container.NetworkSettings.Networks)[0];
-      const networkSettings = container.NetworkSettings.Networks[networkName];
-      return networkSettings.NetworkID === id;
-    });
+    const containersToStop = getContainersByNetwork(containers, id);
 
     if (containersToStop.length === 0) {
       return res.status(404).json({ error: 'No containers found in the specified network' });
@@ -49,14 +59,13 @@ async function stopNetwork(req, res) {
     await Promise.all(stopPromises);
 
     res.status(200).json({ message: 'Network stopped', network: id });
-  } catch (error) {
-    console.error('Error starting network:', error);
+  } catch (error:any) {
+    console.error('Error stopping network:', error);
     res.status(500).json({ error: 'Failed to stop network', details: error.message });
   }
 }
 
-
-async function startNetwork(req, res) {
+async function startNetwork(req: Request, res: Response) {
   const { id } = req.params;
 
   if (!id) {
@@ -70,11 +79,7 @@ async function startNetwork(req, res) {
       return res.status(404).json({ error: 'No containers found' });
     }
 
-    const containersToStart = containers.filter(container => {
-      const networkName = Object.keys(container.NetworkSettings.Networks)[0];
-      const networkSettings = container.NetworkSettings.Networks[networkName];
-      return networkSettings.NetworkID === id;
-    });
+    const containersToStart = getContainersByNetwork(containers, id);
 
     if (containersToStart.length === 0) {
       return res.status(404).json({ error: 'No containers found in the specified network' });
@@ -84,22 +89,20 @@ async function startNetwork(req, res) {
     await Promise.all(startPromises);
 
     res.status(200).json({ message: 'Network started', network: id });
-  } catch (error) {
+  } catch (error:any) {
     console.error('Error starting network:', error);
     res.status(500).json({ error: 'Failed to start network', details: error.message });
   }
 }
 
-
-async function listNetworks(req, res) {
+async function listNetworks(req: Request, res: Response) {
   const networksMap = await getGroupedNetworks();
   res.status(200).json(networksMap);
 }
 
-async function getGroupedNetworks()
-{
+async function getGroupedNetworks() {
   const containers = await listContainers();
-  const networksMap = {};
+  const networksMap: { [networkId: string]: any } = {};
 
   containers.forEach(container => {
     const networkName = Object.keys(container.NetworkSettings.Networks)[0];
@@ -114,31 +117,31 @@ async function getGroupedNetworks()
         NetworkID: networkId,
         Gateway: gateway,
         IPAddress: ipAddress,
-        Nodos: []
+        Nodes: []
       };
     }
 
-    networksMap[networkId].Nodos.push({
+    networksMap[networkId].Nodes.push({
       Name: container.Names[0],
       Status: container.Status,
       State: container.State,
       IPAddress: ipAddress
     });
-  });  
+  });
 
   return networksMap;
 }
 
-const createAccounts = (chainId, nodos) => {
-  nodos.forEach((nodo, index) => {
+const createAccounts = (chainId: string, nodes: Node[]) => {
+  nodes.forEach((node, index) => {
     const nodeIndex = index + 1;
-    const nodeName = `node-${nodo.tipo}-${nodeIndex}`;
+    const nodeName = `node-${node.type}-${nodeIndex}`;
     const keystorePath = `${process.cwd()}/data/${chainId}/${nodeName}/keystore`;
 
-    // Comando de Docker para crear la cuenta
+    // Docker command to create the account
     const dockerCommand = `docker run --rm -it -v ${keystorePath}:/data/${chainId}/${nodeName} ethereum/client-go:v1.13.15 account new --keystore /data/${chainId}/${nodeName}`;
 
-    // Ejecutar el comando de Docker
+    // Execute Docker command
     exec(dockerCommand, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error creating account for ${nodeName}: ${error}`);
@@ -149,9 +152,8 @@ const createAccounts = (chainId, nodos) => {
   });
 };
 
-
-const getGenesis = (chainId, alloc, nodos) => {
-  const extradata = generateExtradata(nodos);
+const getGenesis = (chainId: string, alloc: Alloc, nodes: Node[]) => {
+  const extradata = generateExtradata(nodes);
 
   return {
     config: {
@@ -177,25 +179,33 @@ const getGenesis = (chainId, alloc, nodos) => {
   };
 };
 
-const generateExtradata = (nodos) => {
-  // Filtrar los nodos validadores (tipo 'miner')
-  const miners = nodos.filter(nodo => nodo.tipo === 'miner').map(nodo => nodo.nombre);
-  
-  // Generar el campo `extradata` que es requerido por el protocolo Clique para los validadores.
+const generateExtradata = (nodes: Node[]) => {
+  // Filter validator nodes (type 'miner')
+  const miners = nodes.filter(node => node.type === 'miner').map(node => node.name);
+
+  // Generate the `extradata` field required by the Clique protocol for validators.
   // prefix 64 '0'
   const prefix = "0000000000000000000000000000000000000000000000000000000000000000";
 
-  //sufix 130 '0'
-  const sufix = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+  // suffix 130 '0'
+  const suffix = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
   const minerAddresses = miners.join('');
-  const extradata = '0x' + prefix + minerAddresses + sufix;
+  const extradata = '0x' + prefix + minerAddresses + suffix;
   return extradata;
 };
 
-module.exports = {
+const getContainersByNetwork = (containers: any[], networkId: string) => {
+  return containers.filter(container => {
+    const networkName = Object.keys(container.NetworkSettings.Networks)[0];
+    const networkSettings = container.NetworkSettings.Networks[networkName];
+    return networkSettings.NetworkID === networkId;
+  });
+};
+
+export {
   createNetwork,
   stopNetwork,
-  //resetNetwork,
+  // resetNetwork,
   startNetwork,
-  listNetworks,  
+  listNetworks
 };
