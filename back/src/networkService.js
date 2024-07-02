@@ -1,10 +1,10 @@
 const { createContainer, startContainer, stopContainer, removeContainer, listContainers } = require('./dockerService');
 
-let networks = {};
-
 async function createNetwork(req, res) {
   const { id, chainId, subnet, ipBootnode, alloc, nodos } = req.body;
   
+  let networks = {}; //cambiar
+
   // Aquí iría la lógica para crear el archivo genesis.json y demás configuración específica de Ethereum PoA.
   
   // Crear contenedores Docker para cada nodo
@@ -26,74 +26,130 @@ async function createNetwork(req, res) {
 
 async function stopNetwork(req, res) {
   const { id } = req.params;
-  if (!networks[id]) {
-    return res.status(404).json({ message: 'Network not found' });
+
+  if (!id) {
+    return res.status(400).json({ error: 'Network ID is required' });
   }
 
-  for (const container of networks[id]) {
-    await stopContainer(container);
-  }
+  try {
+    const containers = await listContainers();
 
-  res.status(200).json({ message: 'Network stopped', network: id });
+    if (!containers || containers.length === 0) {
+      return res.status(404).json({ error: 'No containers found' });
+    }
+
+    const containersToStop = containers.filter(container => {
+      const networkName = Object.keys(container.NetworkSettings.Networks)[0];
+      const networkSettings = container.NetworkSettings.Networks[networkName];
+      return networkSettings.NetworkID === id;
+    });
+
+    if (containersToStop.length === 0) {
+      return res.status(404).json({ error: 'No containers found in the specified network' });
+    }
+
+    const stopPromises = containersToStop.map(container => stopContainer(container.Id));
+    await Promise.all(stopPromises);
+
+    res.status(200).json({ message: 'Network stopped', network: id });
+  } catch (error) {
+    console.error('Error starting network:', error);
+    res.status(500).json({ error: 'Failed to stop network', details: error.message });
+  }
 }
 
-async function resetNetwork(req, res) {
-  const { id } = req.params;
-  if (!networks[id]) {
-    return res.status(404).json({ message: 'Network not found' });
-  }
+// async function resetNetwork(req, res) {
+//   const { id } = req.params;
+//   if (!networks[id]) {
+//     return res.status(404).json({ message: 'Network not found' });
+//   }
 
-  for (const container of networks[id]) {
-    await stopContainer(container);
-    await removeContainer(container);
-  }
+//   for (const container of networks[id]) {
+//     await stopContainer(container);
+//     await removeContainer(container);
+//   }
 
-  delete networks[id];
-  await createNetwork(req, res); // Re-crear la red
-}
+//   delete networks[id];
+//   await createNetwork(req, res); // Re-crear la red
+// }
 
 async function startNetwork(req, res) {
   const { id } = req.params;
-  if (!networks[id]) {
-    return res.status(404).json({ message: 'Network not found' });
+
+  if (!id) {
+    return res.status(400).json({ error: 'Network ID is required' });
   }
 
-  for (const container of networks[id]) {
-    await startContainer(container);
-  }
+  try {
+    const containers = await listContainers();
 
-  res.status(200).json({ message: 'Network started', network: id });
+    if (!containers || containers.length === 0) {
+      return res.status(404).json({ error: 'No containers found' });
+    }
+
+    const containersToStart = containers.filter(container => {
+      const networkName = Object.keys(container.NetworkSettings.Networks)[0];
+      const networkSettings = container.NetworkSettings.Networks[networkName];
+      return networkSettings.NetworkID === id;
+    });
+
+    if (containersToStart.length === 0) {
+      return res.status(404).json({ error: 'No containers found in the specified network' });
+    }
+
+    const startPromises = containersToStart.map(container => startContainer(container.Id));
+    await Promise.all(startPromises);
+
+    res.status(200).json({ message: 'Network started', network: id });
+  } catch (error) {
+    console.error('Error starting network:', error);
+    res.status(500).json({ error: 'Failed to start network', details: error.message });
+  }
 }
 
+
 async function listNetworks(req, res) {
+  const networksMap = await getGroupedNetworks();
+  res.status(200).json(networksMap);
+}
+
+async function getGroupedNetworks()
+{
   const containers = await listContainers();
   const networksMap = {};
 
   containers.forEach(container => {
     const networkName = Object.keys(container.NetworkSettings.Networks)[0];
+    const networkSettings = container.NetworkSettings.Networks[networkName];
+    const networkId = networkSettings.NetworkID;
+    const gateway = networkSettings.Gateway;
+    const ipAddress = networkSettings.IPAddress;
 
-    if (!networksMap[networkName]) {
-      networksMap[networkName] = [];
+    if (!networksMap[networkId]) {
+      networksMap[networkId] = {
+        NetworkName: networkName,
+        NetworkID: networkId,
+        Gateway: gateway,
+        IPAddress: ipAddress,
+        Nodos: []
+      };
     }
 
-    networksMap[networkName].push({
+    networksMap[networkId].Nodos.push({
       Name: container.Names[0],
       Status: container.Status,
-      State: container.State
+      State: container.State,
+      IPAddress: ipAddress
     });
-  });
+  });  
 
-  const value =  Object.keys(networksMap).map(network => ({
-    Network: network,
-    Nodos: networksMap[network]
-  }));
-  res.status(200).json(value);
+  return networksMap;
 }
 
 module.exports = {
   createNetwork,
   stopNetwork,
-  resetNetwork,
+  //resetNetwork,
   startNetwork,
-  listNetworks,
+  listNetworks,  
 };
