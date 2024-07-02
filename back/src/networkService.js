@@ -2,26 +2,23 @@ const { createContainer, startContainer, stopContainer, removeContainer, listCon
 
 async function createNetwork(req, res) {
   const { id, chainId, subnet, ipBootnode, alloc, nodos } = req.body;
-  
-  let networks = {}; //cambiar
 
-  // Aquí iría la lógica para crear el archivo genesis.json y demás configuración específica de Ethereum PoA.
-  
-  // Crear contenedores Docker para cada nodo
-  for (const nodo of nodos) {
-    const containerOptions = {
-      Image: 'ethereum/client-go:stable',
-      Cmd: [/* Comandos específicos para cada nodo */],
-      name: `${id}-${nodo.name}`,
-      // Configuración de red y puertos
-    };
-    const container = await createContainer(containerOptions);
-    await startContainer(container);
-    networks[id] = networks[id] || [];
-    networks[id].push(container);
-  }
-  
-  res.status(201).json({ message: 'Network created', network: id });
+  //crear las cuentas
+  const accounts = createAccounts(chainId, nodos);
+
+  const genesis = getGenesis(chainId, alloc, nodos);
+
+  // Genesis filename
+  const filename = `genesis${chainId}.json`;
+  await fs.writeFile(filename, JSON.stringify(genesis, null, 2));
+
+  // init network
+
+  //init node
+
+  //start miners
+
+  res.status(200).send(`Genesis file created: ${filename}`);
 }
 
 async function stopNetwork(req, res) {
@@ -58,20 +55,6 @@ async function stopNetwork(req, res) {
   }
 }
 
-// async function resetNetwork(req, res) {
-//   const { id } = req.params;
-//   if (!networks[id]) {
-//     return res.status(404).json({ message: 'Network not found' });
-//   }
-
-//   for (const container of networks[id]) {
-//     await stopContainer(container);
-//     await removeContainer(container);
-//   }
-
-//   delete networks[id];
-//   await createNetwork(req, res); // Re-crear la red
-// }
 
 async function startNetwork(req, res) {
   const { id } = req.params;
@@ -145,6 +128,69 @@ async function getGroupedNetworks()
 
   return networksMap;
 }
+
+const createAccounts = (chainId, nodos) => {
+  nodos.forEach((nodo, index) => {
+    const nodeIndex = index + 1;
+    const nodeName = `node-${nodo.tipo}-${nodeIndex}`;
+    const keystorePath = `${process.cwd()}/data/${chainId}/${nodeName}/keystore`;
+
+    // Comando de Docker para crear la cuenta
+    const dockerCommand = `docker run --rm -it -v ${keystorePath}:/data/${chainId}/${nodeName} ethereum/client-go:v1.13.15 account new --keystore /data/${chainId}/${nodeName}`;
+
+    // Ejecutar el comando de Docker
+    exec(dockerCommand, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error creating account for ${nodeName}: ${error}`);
+        return;
+      }
+      console.log(`Account created for ${nodeName}: ${stdout}`);
+    });
+  });
+};
+
+
+const getGenesis = (chainId, alloc, nodos) => {
+  const extradata = generateExtradata(nodos);
+
+  return {
+    config: {
+      chainId: chainId,
+      homesteadBlock: 0,
+      eip150Block: 0,
+      eip155Block: 0,
+      eip158Block: 0,
+      byzantiumBlock: 0,
+      constantinopleBlock: 0,
+      petersburgBlock: 0,
+      istanbulBlock: 0,
+      berlinBlock: 0,
+      clique: {
+        period: 5,
+        epoch: 30000
+      }
+    },
+    difficulty: "1",
+    gasLimit: "8000000",
+    extradata: extradata,
+    alloc: alloc
+  };
+};
+
+const generateExtradata = (nodos) => {
+  // Filtrar los nodos validadores (tipo 'miner')
+  const miners = nodos.filter(nodo => nodo.tipo === 'miner').map(nodo => nodo.nombre);
+  
+  // Generar el campo `extradata` que es requerido por el protocolo Clique para los validadores.
+  // prefix 64 '0'
+  const prefix = "0000000000000000000000000000000000000000000000000000000000000000";
+
+  //sufix 130 '0'
+  const sufix = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+  const minerAddresses = miners.join('');
+  const extradata = '0x' + prefix + minerAddresses + sufix;
+  return extradata;
+};
 
 module.exports = {
   createNetwork,
