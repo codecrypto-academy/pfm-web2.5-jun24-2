@@ -23,29 +23,29 @@ const EditNetwork = () => {
       <h1 className="my-4">Edit Network</h1>
       
       <div className="mb-3">
-        <label>Network ID</label>
+        <label className="px-2 py-0.5" >Network ID</label>
         <input type="text" className="form-control" defaultValue="" />
       </div>
       
       <div className="mb-3">
-        <label>Chain ID</label>
+        <label className='px-2 py-0.5'>Chain ID</label>
         <input type="text" className="form-control" defaultValue="" />
       </div>
       
       <div className="mb-3">
-        <label>Subnet</label>
+        <label className='px-2 py-0.5'>Subnet</label>
         <input type="text" className="form-control" defaultValue="" />
       </div>
       
       <div className="mb-3">
-        <label>IP Bootnode</label>
+        <label className='px-2 py-0.5'>IP Bootnode</label>
         <input type="text" className="form-control" defaultValue="" />
       </div>
 
       <h3>Allocation</h3>
       {allocations.map((allocation, index) => (
         <div key={index} className="input-group mb-3">
-          <button className="btn btn-danger" class="pr-5"  onClick={() => removeAllocation(index)}>X</button>
+          <button className="bg-red-500 text-white text-xs font-bold py-0.5 px-0.5 rounded border border-red-700 hover:bg-red-600 mr-2"  onClick={() => removeAllocation(index)}>X</button>
           <input type="text" className="form-control" value={allocation} onChange={(e) => {
             const newAllocations = [...allocations];
             newAllocations[index] = e.target.value;
@@ -58,7 +58,7 @@ const EditNetwork = () => {
       <h3>Nodes</h3>
       {nodes.map((node, index) => (
         <div key={index} className="d-flex mb-3">
-          <button className="btn btn-danger me-2" class="pr-5" onClick={() => removeNode(index)}>X</button>
+          <button className="bg-red-500 text-white text-xs font-bold py-0.5 px-0.5 rounded border border-red-700 hover:bg-red-600 mr-2" onClick={() => removeNode(index)}>X</button>
           <select className="form-select me-2" value={node.type} onChange={(e) => {
             const newNodes = [...nodes];
             newNodes[index].type = e.target.value;
@@ -86,6 +86,12 @@ const EditNetwork = () => {
         </div>
       ))}
       <button className="btn btn-secondary" onClick={addNode}>Add Node</button>
+      <p />
+      <div className='flex justify-center items-center py-4'>
+      <button type='submit' className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        Enviar 
+      </button>
+      </div>
     </div>
   );
 };

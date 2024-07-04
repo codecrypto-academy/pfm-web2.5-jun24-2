@@ -21,8 +21,8 @@ export const MainMenu = () => {
       <Menu typeofMenu={menuItems} changeMenu={changeMenu} />
       {menuItems === "NODE" && <Network />}
       {menuItems === "FAUCET" && <div>FAUCET</div>}
-      {menuItems === "ALLOC" && <div><MenuList  setMenuItems={setMenuItems} /></div>}
-      {menuItems === "OPERATION" && <div><EditNetwork /></div>}
+      {menuItems === "LISTNETWORK" && <div><MenuList  setMenuItems={setMenuItems} /></div>}
+      {menuItems === "EDITNETWORK" && <div><EditNetwork /></div>}
       
     </main>
   );
