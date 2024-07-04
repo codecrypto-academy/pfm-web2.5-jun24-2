@@ -1,6 +1,7 @@
 
 export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, changeMenu: (menu: string) => void }) => {
   return (
+<<<<<<< HEAD
     <div className="bg-[#32e4f0] w-screen p-9 flex justify-center gap-7">
 <button
         onClick={() => {
@@ -15,6 +16,9 @@ export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, 
         OPERATION
       </button>
 
+=======
+    <div className="bg-[#32e4f0] w-screen p-9 flex justify-center gap-7 flex-wrap">
+>>>>>>> feature/nav
       <button
         onClick={() => {
           changeMenu("FAUCET");
