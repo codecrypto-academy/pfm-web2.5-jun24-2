@@ -4,15 +4,15 @@ export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, 
     <div className="bg-[#32e4f0] w-screen p-9 flex justify-center gap-7">
 <button
         onClick={() => {
-          changeMenu("OPERATION");
+          changeMenu("EDITNETWORK");
         }}
         className={`text-4xl ${
-          typeofMenu === "OPERATION"
+          typeofMenu === "EDITNETWORK"
             ? "text-[#155163] border-b-4 border-[#155163]"
             : "text-white"
         }`}
       >
-        OPERATION
+        ADD NETWORK
       </button>
 
       <button
@@ -41,15 +41,15 @@ export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, 
       </button>
       <button
         onClick={() => {
-          changeMenu("ALLOC");
+          changeMenu("LISTNETWORK");
         }}
         className={`text-4xl ${
-          typeofMenu === "ALLOC"
+          typeofMenu === "LISTNETWORK"
             ? "text-[#155163] border-b-4 border-[#155163]"
             : "text-white"
         }`}
       >
-        ALLOC
+        LIST NETWORK
       </button>
     </div>
   );

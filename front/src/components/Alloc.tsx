@@ -7,7 +7,7 @@ function MenuList({ setMenuItems }) {
 
       <h2>List Networks</h2>
 
-      <button onClick={() => setMenuItems("OPERATION")}>Edit Networks</button>
+      <button onClick={() => setMenuItems("EDITNETWORK")}>Edit Networks</button>
 
       <NetworkList />
     </div>
