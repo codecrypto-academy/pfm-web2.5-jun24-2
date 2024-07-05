@@ -13,6 +13,19 @@ export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, 
         }`}
       >
         ADD NETWORK
+      </button>      
+
+      <button
+        onClick={() => {
+          changeMenu("LISTNETWORK");
+        }}
+        className={`text-4xl ${
+          typeofMenu === "LISTNETWORK"
+            ? "text-[#155163] border-b-4 border-[#155163]"
+            : "text-white"
+        }`}
+      >
+        LIST NETWORK
       </button>
 
       <button
@@ -39,19 +52,6 @@ export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, 
         }`}
       >
         NODE
-      </button>
-
-      <button
-        onClick={() => {
-          changeMenu("LISTNETWORK");
-        }}
-        className={`text-4xl ${
-          typeofMenu === "LISTNETWORK"
-            ? "text-[#155163] border-b-4 border-[#155163]"
-            : "text-white"
-        }`}
-      >
-        LIST NETWORK
       </button>
     </div>
   );
