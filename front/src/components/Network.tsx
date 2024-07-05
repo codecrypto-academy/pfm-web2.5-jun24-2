@@ -16,11 +16,12 @@ export const Network = () => {
   };
 
   return (
-      <div>
-        {listOfNetworks.map((network, index) => (
-          <div className="flex justify-center items-center gap-4 m-5 flex-wrap " key={
-            network
-          }>
+    <div>
+      {listOfNetworks.map((network, index) => (
+        <div
+          className="flex justify-center items-center gap-4 m-5 flex-wrap "
+          key={network}
+        >
           <div className="flex gap-4 w-60">
             <Button typeOfButton="primary" text="UP" />
             <Button typeOfButton="secondary" text="DOWN" />
@@ -38,6 +39,16 @@ export const Network = () => {
             className="bg-[#32e4f0] h-11 text-white w-36"
           >
             CHANGE STATUS
+          </button>
+          <button
+            className="bg-[#32e4f0] h-11 text-white w-36"
+          >
+            FAUCET
+          </button>
+          <button
+            className="bg-[#32e4f0] h-11 text-white w-36"
+          >
+            RESTART
           </button>
         </div>
       ))}

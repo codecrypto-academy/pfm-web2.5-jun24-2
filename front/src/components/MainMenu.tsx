@@ -4,7 +4,6 @@ import { Network } from "../components/Network";
 import { useMenu } from "../hooks/useMenu";
 import  EditNetwork  from "./EditNetwork";
 import MenuList from "./MenuList";
-import { Operations } from "./Operations";
 import { Faucet } from "./Faucet";
 
 
@@ -25,7 +24,6 @@ export const MainMenu = () => {
       {menuItems === "FAUCET" && <div><Faucet  /></div>}
       {menuItems === "LISTNETWORK" && <div><MenuList  setMenuItems={setMenuItems} /></div>}
       {menuItems === "EDITNETWORK" && <div><EditNetwork /></div>}
-      {menuItems === "OPERATIONS" && <div><Operations setMenuItems={setMenuItems} /></div>}
     </main>
   );
 };
