@@ -13,7 +13,7 @@ const fetchNetworks = async () => {
 //   return data;
 // };
 
-export const NetworkList: React.FC = () => {
+export const ListNetworks: React.FC = () => {
   const { data, error, isLoading } = useQuery({
     queryKey: ['networks'],
     queryFn: fetchNetworks
