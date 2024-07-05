@@ -2,7 +2,7 @@ import logoEthereum from "../assets/logoEthereum.png";
 
 export const Header = () => {
   return (
-    <main className="bg-[#155163] pt-9 flex justify-center items-center flex-col">
+    <header className="bg-[#155163] pt-9 flex justify-center items-center flex-col">
       <div className="flex  m-auto flex-wrap justify-center items-center pt-32 pb-1">
         <div className=" flex flex-col gap-4 w-[40%] h-[50vh]">
           <h1 className="text-white text-4xl">THE FAUCET FOR ENTERPRISE</h1>
@@ -19,6 +19,6 @@ export const Header = () => {
         </div>
         <img src={logoEthereum} alt="" className=" w-56" />
       </div>
-    </main>
+    </header>
   );
 };
