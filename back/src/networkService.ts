@@ -118,26 +118,30 @@ async function getGroupedNetworks() {
     const gateway = networkSettings.Gateway;
     const ipAddress = networkSettings.IPAddress;
 
-    if (!networksMap[networkId]) {
-      networksMap[networkId] = {
-        NetworkName: networkName,
-        NetworkID: networkId,
-        Gateway: gateway,
-        IPAddress: ipAddress,
-        Nodes: []
-      };
-    }
+    // Validación de gateway y networkId
+    if (gateway && networkId) {
+      if (!networksMap[networkId]) {
+        networksMap[networkId] = {
+          NetworkName: networkName,
+          NetworkID: networkId,
+          Gateway: gateway,
+          IPAddress: ipAddress,
+          Nodes: []
+        };
+      }
 
-    networksMap[networkId].Nodes.push({
-      Name: container.Names[0],
-      Status: container.Status,
-      State: container.State,
-      IPAddress: ipAddress
-    });
+      networksMap[networkId].Nodes.push({
+        Name: container.Names[0],
+        Status: container.Status,
+        State: container.State,
+        IPAddress: ipAddress
+      });
+    }
   });
 
   return networksMap;
 }
+
 
 
 const createAccounts = async (chainId: string, nodes: Node[]): Promise<void> => {
