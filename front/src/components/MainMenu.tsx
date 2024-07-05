@@ -4,7 +4,6 @@ import { Network } from "../components/Network";
 import { useMenu } from "../hooks/useMenu";
 import  EditNetwork  from "./EditNetwork";
 import MenuList from "./MenuList";
-import { Operations } from "./Operations";
 import { Faucet } from "./Faucet";
 
 
@@ -19,13 +18,12 @@ export const MainMenu = () => {
     setMenuItems(menu);
   };
   return (
-    <main className="bg-[#155163] w-screen h-screen flex justify-center items-center flex-col">
+    <main className="bg-[#155163] w-screen flex justify-center items-center flex-col">
       <Menu typeofMenu={menuItems} changeMenu={changeMenu} />
       {menuItems === "NODE" && <Network />}
       {menuItems === "FAUCET" && <div><Faucet  /></div>}
       {menuItems === "LISTNETWORK" && <div><MenuList  setMenuItems={setMenuItems} /></div>}
       {menuItems === "EDITNETWORK" && <div><EditNetwork /></div>}
-      {menuItems === "OPERATIONS" && <div><Operations setMenuItems={setMenuItems} /></div>}
     </main>
   );
 };

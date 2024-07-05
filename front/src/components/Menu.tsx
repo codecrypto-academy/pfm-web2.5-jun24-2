@@ -1,7 +1,7 @@
 
 export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, changeMenu: (menu: string) => void }) => {
   return (
-    <div className="bg-[#32e4f0] w-screen p-9 flex justify-center gap-7">
+    <div className="bg-[#32e4f0] w-screen p-9 flex justify-center gap-7 flex-wrap">
       <button
         onClick={() => {
           changeMenu("EDITNETWORK");
@@ -52,19 +52,6 @@ export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, 
         }`}
       >
         LIST NETWORK
-      </button>
-
-      <button
-        onClick={() => {
-          changeMenu("OPERATIONS");
-        }}
-        className={`text-4xl ${
-          typeofMenu === "OPERATIONS"
-            ? "text-[#155163] border-b-4 border-[#155163]"
-            : "text-white"
-        }`}
-      >
-        OPERATIONS
       </button>
     </div>
   );
