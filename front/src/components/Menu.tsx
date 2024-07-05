@@ -53,19 +53,6 @@ export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, 
       >
         LIST NETWORK
       </button>
-
-      <button
-        onClick={() => {
-          changeMenu("OPERATIONS");
-        }}
-        className={`text-4xl ${
-          typeofMenu === "OPERATIONS"
-            ? "text-[#155163] border-b-4 border-[#155163]"
-            : "text-white"
-        }`}
-      >
-        OPERATIONS
-      </button>
     </div>
   );
 };
