@@ -13,9 +13,9 @@ export const Navbar = () => {
   }, [account, setAccount]);
 
   return (
-    <nav className="w-screen flex justify-between bg-[#32e4f0] p-2 fixed z-50 box-shadow-nav">
+    <nav className=" flex w-[100%] justify-between bg-[#32e4f0] p-2 fixed z-50 box-shadow-nav">
       <div>
-        <h1 className="text-white text-xl">THE FAUCET FOR ENTERPRICE</h1>
+        <h1 className="text-white text-xl">THE FAUCET FOR ENTERPRISE</h1>
       </div>
       <div className="flex gap-3">
         <button
