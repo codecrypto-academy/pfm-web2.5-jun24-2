@@ -1,7 +1,7 @@
 
 export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, changeMenu: (menu: string) => void }) => {
   return (
-    <div className="bg-[#32e4f0] w-screen p-9 flex justify-center gap-7 flex-wrap">
+    <div className="bg-[#32e4f0] w-[100%] p-9 flex justify-center gap-7 flex-wrap">
       <button
         onClick={() => {
           changeMenu("EDITNETWORK");

@@ -18,7 +18,7 @@ export const MainMenu = () => {
     setMenuItems(menu);
   };
   return (
-    <main className="bg-[#155163] w-screen flex justify-center items-center flex-col">
+    <main className="bg-[#155163]  flex justify-center items-center flex-col pb-[25px]">
       <Menu typeofMenu={menuItems} changeMenu={changeMenu} />
       {menuItems === "NODE" && <Network />}
       {menuItems === "FAUCET" && <div><Faucet  /></div>}
