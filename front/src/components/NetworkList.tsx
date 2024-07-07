@@ -68,18 +68,22 @@ export const ListNetworks: React.FC = ({ setMenuItems }) => {
         {networks.map((network, index) => (
           <tr key={index}>
             <td scope="row">
-            <button className="bg-white text-black text-sm px-4 py-2 rounded m-1">
-                Faucet
-              </button>
+              <div>
               <button className="bg-green-500 green-500  text-white text-sm px-4 py-2 rounded m-1">
                 UP
               </button>
               <button className="bg-green-500 green-500  text-white text-sm px-4 py-2 rounded m-1">
                 DOWN
               </button>
+              </div>
+              <div>
+              <button className="bg-white text-black text-sm px-4 py-2 rounded m-1">
+                Faucet
+              </button>
               <button className="bg-white text-black text-sm px-4 py-2 rounded m-1" onClick={()=> setMenuItems("NODE")} >
                 Nodes
               </button>
+              </div>
               <button
                 className="bg-red-500 red-500  text-white text-sm px-4 py-2 rounded m-1"
                 onClick={() => handleDelete(index)}
