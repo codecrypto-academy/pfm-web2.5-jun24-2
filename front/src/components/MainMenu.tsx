@@ -23,7 +23,7 @@ export const MainMenu = () => {
       {menuItems === "NODE" && <Network />}
       {menuItems === "FAUCET" && <div><Faucet /></div>}
       {menuItems === "LISTNETWORK" && <div><ListNetworks /></div>}
-      {menuItems === "EDITNETWORK" && <div><EditNetwork /></div>}
+      
     </main>
   );
 };

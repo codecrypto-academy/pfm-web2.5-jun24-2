@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import EditNetwork from "./EditNetwork";
 
 const fetchNetworks = async () => {
   const { data } = await axios.get('http://localhost:3000/api/networks');
@@ -14,21 +15,39 @@ const fetchNetworks = async () => {
 // };
 
 export const ListNetworks: React.FC = () => {
-  const { data, error, isLoading } = useQuery({
+ /* const { data, error, isLoading } = useQuery({
     queryKey: ['networks'],
     queryFn: fetchNetworks
-  });
+  });*/
+  let data = {
+    "57a7e0fe67d1f4fb35da7b79f1431de6975b7d9e156c207c0db7d76e0ea52b04": {
+        "NetworkName": "bridge",
+        "NetworkID": "57a7e0fe67d1f4fb35da7b79f1431de6975b7d9e156c207c0db7d76e0ea52b04",
+        "Gateway": "172.17.0.1",
+        "IPAddress": "172.17.0.2",
+        "Nodes": [
+            {
+                "Name": "/eth-node-01",
+                "Status": "Up 5 minutes",
+                "State": "running",
+                "IPAddress": "172.17.0.2"
+            }
+        ]
+    }
+}
   const [networks, setNetworks] = useState<any[]>([]);
 
   useEffect(() => {
+    console.log({data})
     if (data) {
       const networkArray = Object.values(data);
       setNetworks(networkArray);
     }
-  }, [data]);
+  }, []);
+//}, [data]);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {(error as Error).message}</div>;
+ // if (isLoading) return <div>Loading...</div>;
+//if (error) return <div>Error: {(error as Error).message}</div>;
 
   // const handleAdd = async () => {    
 
@@ -40,6 +59,16 @@ export const ListNetworks: React.FC = () => {
   //   setNetworks([networks, nets]);    
   // };
 
+  const [showEdit, setShowEdit] = useState(false);
+  const [nets, setNets] = useState<any[]>([]);
+
+  const toggleEdit = () => {
+    setShowEdit(true);
+  };
+  if (showEdit) {
+    return <EditNetwork />
+  }
+
   const handleDelete = (index: number) => {
     const newNetworks = networks.filter((_, i) => i !== index);
     setNetworks(newNetworks);
@@ -47,7 +76,7 @@ export const ListNetworks: React.FC = () => {
 
   return (
     <>
-    <button className="bg-green-500 border-green-500 border-2 text-white text-sm px-4 py-2 rounded m-1" >Add Network</button>
+    <button className="bg-green-500 border-green-500 border-2 text-white text-sm px-4 py-2 rounded m-1" onClick={toggleEdit} >Add Network</button>
     <table className="min-w-full divide-y divide-gray-200">
       <thead>
         <tr>
