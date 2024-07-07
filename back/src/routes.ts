@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
-import { createNetwork, stopNetwork, startNetwork, listNetworks } from './networkService';
-import { containersInfo } from './dockerService';
+import { createNetwork, stopNetwork, startNetwork, listNetworks } from './services/networkService';
+import { containersInfo } from './services/dockerService';
 
 const router = express.Router();
 
