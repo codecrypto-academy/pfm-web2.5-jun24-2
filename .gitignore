@@ -131,4 +131,6 @@ dist
 
 
 # Ignorar carpeta data
-/back/data
+back/data/*
+!back/data/*.txt
+!back/data/*.md
