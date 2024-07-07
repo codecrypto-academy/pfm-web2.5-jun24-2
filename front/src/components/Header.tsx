@@ -18,11 +18,17 @@ export const Header = () => {
             your resources and take your network management to the next level
             with our intuitive and powerful platform.
           </p>
+<<<<<<< HEAD
           <Link to="/methods">
             <button className="bg-[#32e4f0] h-11 text-white w-36 font-bold">
               GET STARTED
             </button>
           </Link>
+=======
+          <button className="bg-[#32e4f0] h-11 text-white w-36 rounded m-1">
+            GET STARTED
+          </button>
+>>>>>>> 6455c19 (vistas front)
         </div>
         <img src={logoEthereum} alt="" className=" w-60" />
       </div>
