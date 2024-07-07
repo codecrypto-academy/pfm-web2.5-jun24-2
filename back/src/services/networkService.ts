@@ -3,43 +3,38 @@ import { exec } from 'child_process';
 import fs from 'fs/promises';
 import { promisify } from 'util';
 import { startContainer, stopContainer, listContainers } from './dockerService';
+import { NetworkNode } from '../interfaces/networkNode';
+import { Alloc } from '../interfaces/alloc';
+import path from 'path';
 
 const execAsync = promisify(exec);
-
-interface Node {
-  name: string;
-  type: string;
-  ip: string;
-  port?: number;
-  address: string
-}
-
-interface Alloc {
-  address: string,
-  balance: string ;
-}
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function createNetwork(req: Request, res: Response) {
-  const { id, chainId, subnet, ipBootnode, alloc, nodes }: { id: string, chainId: string, subnet: string, ipBootnode: string, alloc: Alloc[], nodes: Node[] } = req.body;
+  const { id, chainId, subnet, ipBootnode, alloc, nodes }: { id: string, chainId: number, subnet: string, ipBootnode: string, alloc: Alloc[], nodes: NetworkNode[] } = req.body;
   
-  // Create accounts
-  await createAccounts(chainId, nodes);
 
-  const genesis = getGenesis(chainId, alloc, nodes);
+  try {
+    // Create accounts
+    await createAccounts(chainId, nodes);
 
-  // Genesis filename
-  const genesisPath = `${process.cwd()}\\data\\${chainId}`
-  const filename = `${genesisPath}\\genesis${chainId}.json`;
-  await fs.writeFile(filename, JSON.stringify(genesis, null, 2));
+    const genesis = getGenesis(chainId, alloc, nodes);
 
-  // Initialize network
+    // Genesis filename
+    const genesisPath = `${process.cwd()}\\data\\net${chainId}`
+    const filename = `${genesisPath}\\genesis${chainId}.json`;
+    await fs.writeFile(filename, JSON.stringify(genesis, null, 2));
 
-  // Initialize node
+    // Initialize network  
+    await initializeEthereumNodes(nodes, chainId)
+    
+    // Initialize node
 
-  // Start miners
-
-  //res.status(200).send(`Genesis file created: ${filename}`);
-  res.status(200).send(`Genesis file created`);
+    // Start miners
+    res.status(200).send('Network initialized successfully');
+  } catch (error) {
+    res.status(500).send(`Error initializing network: ${error}`);
+  }
 }
 
 async function stopNetwork(req: Request, res: Response) {
@@ -143,18 +138,18 @@ async function getGroupedNetworks() {
 }
 
 
+// account new
+const createAccounts = async (chainId: number, nodes: NetworkNode[]): Promise<void> => {
 
-const createAccounts = async (chainId: string, nodes: Node[]): Promise<void> => {
   for (let index = 0; index < nodes.length; index++) {
     const node = nodes[index];
     const nodeIndex = index + 1;
-    const nodeName = `node-${node.type}-${nodeIndex}`;
-    const keystorePath = `${process.cwd()}\\data\\${chainId}\\${nodeName}\\keystore`;
+    const nodeName = `node-${node.type}_${node.name}`;
+    const keystorePath = `${process.cwd()}\\data\\net${chainId}\\${nodeName}\\keystore`;
     const pwdPath = `${process.cwd()}\\data\\pwd.txt`;
 
-    // Docker command to create the account
-    const dockerCommand = `docker run --rm -v "${keystorePath}:/data/${chainId}/${nodeName}" -v "${pwdPath}:/data/pwd.txt" ethereum/client-go:v1.13.15 account new --password /data/pwd.txt --keystore /data/${chainId}/${nodeName}`;
-    
+    const dockerCommand = `docker run --rm -v "${keystorePath}:/data/net${chainId}/${nodeName}" -v "${pwdPath}:/data/pwd.txt" ethereum/client-go:v1.13.15 account new --password /data/pwd.txt --keystore /data/net${chainId}/${nodeName}`;
+
     try {
       const { stdout } = await execAsync(dockerCommand);
       const addressMatch = stdout.match(/0x[a-fA-F0-9]{40}/);
@@ -170,7 +165,7 @@ const createAccounts = async (chainId: string, nodes: Node[]): Promise<void> => 
   }
 };
 
-const getGenesis = (chainId: string, alloc: Alloc[], nodes: Node[]) => {
+const getGenesis = (chainId: number, alloc: Alloc[], nodes: NetworkNode[]) => {
   const extradata = generateExtradata(nodes);
   
   //Remove 0x if the alloc.address has it
@@ -206,7 +201,7 @@ const getGenesis = (chainId: string, alloc: Alloc[], nodes: Node[]) => {
   };
 };
 
-const generateExtradata = (nodes: Node[]) => {
+const generateExtradata = (nodes: NetworkNode[]) => {
   // Filter validator nodes (type 'miner')
   const miners = nodes.filter(node => node.type === 'miner').map(node => node.address);
 
@@ -229,7 +224,7 @@ const getContainersByNetwork = (containers: any[], networkId: string) => {
   });
 };
 
-const addMinerAllocations = (alloc: Alloc[], nodes: Node[]): Alloc[] => {
+const addMinerAllocations = (alloc: Alloc[], nodes: NetworkNode[]): Alloc[] => {
   const miners = nodes.filter(node => node.type === 'miner')
 
   for (let index = 0; index < miners.length; index++) {
@@ -242,6 +237,46 @@ const addMinerAllocations = (alloc: Alloc[], nodes: Node[]): Alloc[] => {
   }
   return alloc;
 };
+
+// init
+async function initializeEthereumNodes(nodes: NetworkNode[], chainId: number): Promise<void> {
+  const genesisFilePath = `${process.cwd()}\\data\\net${chainId}\\genesis${chainId}.json`;
+  const dockerImage = 'ethereum/client-go:v1.13.15';
+
+  const promises: Promise<void>[] = [];
+
+  for (const node of nodes) {
+    const nodeName = `node-${node.type}_${node.name}`;
+    const dataDir = `${process.cwd()}\\data\\net${chainId}\\${nodeName}`;
+
+    const command = `docker run --rm -v "${dataDir}:/data/net${chainId}/${node.name}" -v "${genesisFilePath}:/data/net${chainId}/genesis.json" ${dockerImage} init --datadir /data/net${chainId}/${node.name} /data/net${chainId}/genesis.json`;
+
+    promises.push(
+      executeCommand(command).then(() => {
+        console.log(`Node ${node.name} initialized.`);
+      }).catch((error) => {
+        console.error(`Failed to initialize node ${node.name}: ${error}`);
+      })
+    );
+  }
+  await Promise.all(promises);
+}
+
+async function executeCommand(command: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(`Error: ${error.message}`);
+      } else if (stderr) {
+        console.error(`stderr: ${stderr}`);
+        resolve();
+      } else {
+        console.log(`stdout: ${stdout}`);
+        resolve();
+      }
+    });
+  });
+}
 
 
 export {
