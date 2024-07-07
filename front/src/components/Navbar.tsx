@@ -14,12 +14,14 @@ export const Navbar = () => {
 
   return (
     <nav className=" flex w-[100%] justify-between bg-[#32e4f0] p-2 fixed z-50 box-shadow-nav">
-      <div>
-        <h1 className="text-white text-xl">THE FAUCET FOR ENTERPRISE</h1>
+      <div className="flex justify-center items-center">
+        <h1 className="text-white text-xs md:text-xl font-bold">
+          THE FAUCET FOR ENTERPRISE
+        </h1>
       </div>
       <div className="flex gap-3">
         <button
-          className={`text-white text-xl border-b-2 border-[#fff] ${
+          className={`text-white text-xs md:text-xl font-bold border-b-2 border-[#fff] ${
             account ? "cursor-auto" : "cursor-pointer"
           } hover:text-[#155163] hover:border-[#155163]`}
           onClick={connectMetaMask}

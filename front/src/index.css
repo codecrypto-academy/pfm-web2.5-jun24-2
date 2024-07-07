@@ -11,3 +11,17 @@
 .box-shadow-nav {
     box-shadow: -5px 13px 20px -13px rgba(0, 0, 0, 0.75);
 }
+.animation-modal {
+    transform: translateX(2000px);
+    animation: 1s side-content-img ease-in-out forwards;
+}
+
+@keyframes side-content-img {
+    0% {
+        transform: translateX(2000px);
+    }
+
+    100% {
+        transform: translateX(0px);
+    }
+}
