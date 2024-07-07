@@ -63,6 +63,9 @@ export const ListNetworks: React.FC = () => {
           <tr key={index}>
             <td scope="row">
               <button className="bg-green-500 border-green-500 border-2 text-white text-sm px-4 py-2 rounded m-1">
+                Faucet
+              </button>
+              <button className="bg-green-500 border-green-500 border-2 text-white text-sm px-4 py-2 rounded m-1">
                 UP
               </button>
               <button className="bg-green-500 border-green-500 border-2 text-white text-sm px-4 py-2 rounded m-1">
