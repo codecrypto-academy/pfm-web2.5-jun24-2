@@ -13,7 +13,7 @@ export const Header = () => {
             It is a simple application that allows you to get some tokens for
             your enterprise.
           </p>
-          <button className="bg-[#32e4f0] h-11 text-white w-36">
+          <button className="bg-[#32e4f0] h-11 text-white w-36 rounded m-1">
             GET STARTED
           </button>
         </div>

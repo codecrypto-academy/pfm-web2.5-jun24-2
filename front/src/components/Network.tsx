@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "./Button";
 
-export const Network = () => {
+export const Network = ({ setMenuItems }) => {
   const listOfNetworks = ["Network 1", "Network 2", "Network 3"];
   const initialStatuses = listOfNetworks.map(() => "Down");
   const [statuses, setStatuses] = useState(initialStatuses);
@@ -17,6 +17,12 @@ export const Network = () => {
 
   return (
     <div>
+      <p>
+      <button onClick={() => setMenuItems("LISTNETWORK")}  type="submit"
+          className="bg-[#155163] w-44 h-10 hover:bg-[#32e4f0] hover:text-black  text-white rounded-lg ">
+        Return to Networks
+      </button>
+      </p>
       {listOfNetworks.map((network, index) => (
         <div
           className="flex justify-center items-center gap-4 m-5 flex-wrap "

@@ -20,9 +20,9 @@ export const MainMenu = () => {
   return (
     <main className="bg-[#155163]  flex justify-center items-center flex-col pb-[25px]">
       <Menu typeofMenu={menuItems} changeMenu={changeMenu} />
-      {menuItems === "NODE" && <Network />}
+      {menuItems === "NODE" && <Network setMenuItems={setMenuItems}/>}
       {menuItems === "FAUCET" && <div><Faucet /></div>}
-      {menuItems === "LISTNETWORK" && <div><ListNetworks /></div>}
+      {menuItems === "LISTNETWORK" && <div><ListNetworks setMenuItems={setMenuItems}/></div>}
       
     </main>
   );
