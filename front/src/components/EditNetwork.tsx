@@ -16,46 +16,29 @@ const EditNetwork = ({ onBack }) => {
     setNodes([...nodes, { type: "", name: "", ip: "", port: "" }]);
   const removeNode = (index) => setNodes(nodes.filter((_, i) => i !== index));
 
-<<<<<<< HEAD
-  return (
-    <div className="container">
-      <h1 className="my-4">Edit Network</h1>
-<<<<<<< HEAD
+  const [formData, setFormData] = useState({
+    networkID: "",
+    chainID: "",
+    subnet: "",
+    ipBootnode: "",
+    allocations: "",
+  });
 
-=======
-      <p>
-        <h3>Return to Networks</h3>
-      </p>
-      
->>>>>>> 571226a (unión boton addNetwork con EditNetwork)
-      <div className="mb-3">
-        <label className="px-2 py-0.5">Network ID</label>
-        <input type="text" className="form-control" defaultValue="" />
-      </div>
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-      <div className="mb-3">
-        <label className="px-2 py-0.5">Chain ID</label>
-        <input type="text" className="form-control" defaultValue="" />
-      </div>
-
-      <div className="mb-3">
-        <label className="px-2 py-0.5">Subnet</label>
-        <input type="text" className="form-control" defaultValue="" />
-      </div>
-
-      <div className="mb-3">
-        <label className="px-2 py-0.5">IP Bootnode</label>
-        <input type="text" className="form-control" defaultValue="" />
-      </div>
-=======
-  const handleSubmit = (event) =>{
-    event.preventDefault()
-  }
->>>>>>> 6455c19 (vistas front)
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(formData);
+  };
 
   return (
     <form className="container" onSubmit={handleSubmit}>
-      
       <div className="flex items-center">
         <h1 className="my-4 text-white mr-10">Edit Network</h1>
         <p>
@@ -70,19 +53,43 @@ const EditNetwork = ({ onBack }) => {
       </div>
       <div className="mb-3 text-white">
         <label className="px-2 py-0.5">Network ID</label>
-        <input type="text" className="form-control" defaultValue="" />
+        <input
+          name="networkID"
+          type="text"
+          className="form-control"
+          value={formData.networkID}
+          onChange={handleChange}
+        />
       </div>
       <div className="mb-3 text-white">
         <label className="px-2 py-0.5">Chain ID</label>
-        <input type="text" className="form-control" defaultValue="" />
+        <input
+          name="cahinId"
+          type="text"
+          className="form-control"
+          value={formData.chainID}
+          onChange={handleChange}
+        />
       </div>
       <div className="mb-3 text-white">
         <label className="px-2 py-0.5">Subnet</label>
-        <input type="text" className="form-control" defaultValue="" />
+        <input
+          name="subnet"
+          type="text"
+          className="form-control"
+          value={formData.subnet}
+          onChange={handleChange}
+        />
       </div>
       <div className="mb-3 text-white">
         <label className="px-2 py-0.5">IP Bootnode</label>
-        <input type="text" className="form-control" defaultValue="" />
+        <input
+          name="ipBootnode"
+          type="text"
+          className="form-control"
+          value={formData.ipBootnode}
+          onChange={handleChange}
+        />
       </div>
       <h3 className="text-white">Allocation</h3>
       {allocations.map((allocation, index) => (
@@ -90,15 +97,12 @@ const EditNetwork = ({ onBack }) => {
           <button
             type="button"
             className="bg-red-500 text-white text-xs font-bold py-0.5 px-0.5 rounded border border-red-700 hover:bg-red-600 mr-2"
-<<<<<<< HEAD
             onClick={() => removeAllocation(index)}
           >
-=======
-            onClick={() => removeAllocation(index)}>
->>>>>>> 6455c19 (vistas front)
             X
           </button>
           <input
+            //name="allocations"
             type="text"
             className="form-control"
             value={allocation}
@@ -106,26 +110,8 @@ const EditNetwork = ({ onBack }) => {
               const newAllocations = [...allocations];
               newAllocations[index] = e.target.value;
               setAllocations(newAllocations);
-<<<<<<< HEAD
             }}
           />
-        </div>
-      ))}
-      <button
-        className="btn btn-secondary mb-4"
-        onClick={addAllocation}
-        type="button"
-      >
-        Add Allocation
-      </button>
-
-      <h3>Nodes</h3>
-      {nodes.map((node, index) => (
-        <div key={index} className="d-flex mb-3">
-          <button
-=======
-            }} />
-          
         </div>
       ))}
       <button
@@ -140,7 +126,6 @@ const EditNetwork = ({ onBack }) => {
         <div key={index} className="d-flex mb-3">
           <button
             type="button"
->>>>>>> 6455c19 (vistas front)
             className="bg-red-500 text-white text-xs font-bold py-0.5 px-0.5 rounded border border-red-700 hover:bg-red-600 mr-2"
             onClick={() => removeNode(index)}
           >
@@ -194,22 +179,18 @@ const EditNetwork = ({ onBack }) => {
           />
         </div>
       ))}
-<<<<<<< HEAD
-      <button className="btn btn-secondary" onClick={addNode} type="button">
-=======
-      <button type="button" className="btn btn-secondary text-white" onClick={addNode}>
->>>>>>> 6455c19 (vistas front)
+      <button
+        type="button"
+        className="btn btn-secondary text-white"
+        onClick={addNode}
+      >
         Add Node
       </button>
       <p />
       <div className="flex justify-center items-center py-4">
         <button
           type="submit"
-<<<<<<< HEAD
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-=======
           className="bg-[#155163] w-36 h-8 hover:bg-[#32e4f0] hover:text-black text-white rounded-lg"
->>>>>>> 6455c19 (vistas front)
         >
           Enviar
         </button>
