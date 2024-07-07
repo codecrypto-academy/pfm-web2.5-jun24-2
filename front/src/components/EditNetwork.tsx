@@ -21,7 +21,14 @@ const EditNetwork = () => {
   return (
     <div className="container">
       <h1 className="my-4">Edit Network</h1>
+<<<<<<< HEAD
 
+=======
+      <p>
+        <h3>Return to Networks</h3>
+      </p>
+      
+>>>>>>> 571226a (unión boton addNetwork con EditNetwork)
       <div className="mb-3">
         <label className="px-2 py-0.5">Network ID</label>
         <input type="text" className="form-control" defaultValue="" />

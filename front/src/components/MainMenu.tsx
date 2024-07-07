@@ -21,7 +21,7 @@ export const MainMenu = () => {
       <Menu typeofMenu={menuItems} changeMenu={changeMenu} />
       {menuItems === "FAUCET" && <div><Faucet /></div>}
       {menuItems === "LISTNETWORK" && <div><ListNetworks /></div>}
-      {menuItems === "EDITNETWORK" && <div><EditNetwork /></div>}
+      
     </main>
   );
 };
