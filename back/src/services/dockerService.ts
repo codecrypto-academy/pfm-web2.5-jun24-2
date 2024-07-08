@@ -23,6 +23,11 @@ async function stopContainer(containerId: string) {
   return await container.stop();
 }
 
+async function restartContainer(containerId: string) {
+  const container = docker.getContainer(containerId);
+  return await container.restart();
+}
+
 async function removeContainer(containerId: string) {
   const container = docker.getContainer(containerId);
   return await container.remove();
@@ -45,6 +50,7 @@ export {
   createContainer,
   startContainer,
   stopContainer,
+  restartContainer,
   removeContainer,
   listContainers,
   containersInfo

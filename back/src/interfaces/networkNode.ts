@@ -3,5 +3,6 @@ export interface NetworkNode {
     type: string;
     ip: string;
     port?: number;
-    address: string
+    address: string,
+    enode:string
 }
