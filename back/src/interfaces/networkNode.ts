@@ -1,4 +1,5 @@
 export interface NetworkNode {
+    id:string;
     name: string;
     type: string;
     ip: string;

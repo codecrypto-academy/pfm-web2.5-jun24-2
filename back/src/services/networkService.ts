@@ -18,9 +18,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 async function createNetwork(req: Request, res: Response) {
   const network:Network = req.body;
   
-
   try {
-
     //validate if the network id exists
     await validateAndCreateNetwork(network);
 
@@ -187,6 +185,7 @@ async function getGroupedNetworks() {
       }
 
       networksMap[networkId].Nodes.push({
+        Id: container.Id,
         Name: container.Names[0],
         Status: container.Status,
         State: container.State,
@@ -338,10 +337,10 @@ async function executeCommand(command: string): Promise<void> {
   });
 }
 
-
 function getNodeName(node:NetworkNode) {
   return `node-${node.type}_${node.name}`;
 }
+
 function getEnvPath(chainId:number) {
   return path.join(process.cwd(), 'data', `net${chainId}`);  
 }
