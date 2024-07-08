@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { createNetwork, stopNetwork, startNetwork, listNetworks, restartNetwork, listNodes } from './services/networkService';
 import { containersInfo } from './services/dockerService';
+import { restartNode, startNode, stopNode } from './services/nodeService';
 
 const router = express.Router();
 
@@ -15,9 +16,9 @@ router.post('/network/:id/restart', (req: Request, res: Response) => restartNetw
 router.get('/networks', (req: Request, res: Response) => listNetworks(req, res));
 
 // nodes endpoints
-// router.post('/node/:id/stop', (req: Request, res: Response) => stopNode(req, res));
-// router.post('/node/:id/start', (req: Request, res: Response) => startNetwork(req, res));
-// router.post('/node/:id/restart', (req: Request, res: Response) => restartNetwork(req, res));
+router.post('/node/:id/stop', (req: Request, res: Response) => stopNode(req, res));
+router.post('/node/:id/start', (req: Request, res: Response) => startNode(req, res));
+router.post('/node/:id/restart', (req: Request, res: Response) => restartNode(req, res));
 router.get('/network/:id/nodes', (req: Request, res: Response) => listNodes(req, res));
 
 

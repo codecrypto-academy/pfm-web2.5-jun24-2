@@ -37,6 +37,11 @@ async function listContainers() {
   return await docker.listContainers({ all: true });
 }
 
+async function getContainer(containerId: string) {
+  const container = docker.getContainer(containerId);
+  return await container.inspect();
+}
+
 async function containersInfo(req: Request, res: Response) {
   try {
     const containers = await listContainers();
@@ -53,5 +58,6 @@ export {
   restartContainer,
   removeContainer,
   listContainers,
+  getContainer,
   containersInfo
 };
