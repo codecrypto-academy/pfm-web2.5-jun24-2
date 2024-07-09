@@ -23,7 +23,7 @@ const EditNetwork = ({ onBack }) => {
     ipBootnode: "",
     allocations: "",
   });
-
+// Fiunción para manejar los cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -31,14 +31,14 @@ const EditNetwork = ({ onBack }) => {
       [name]: value
     }));
   };
-
+//Función para manejar el envío del formulario
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
   };
 
   return (
-    <form className="container" onSubmit={handleSubmit}>
+    <>
       <div className="flex items-center">
         <h1 className="my-4 text-white mr-10">Edit Network</h1>
         <p>
@@ -51,12 +51,13 @@ const EditNetwork = ({ onBack }) => {
           </button>
         </p>
       </div>
+      <form className="container" onSubmit={handleSubmit}>
       <div className="mb-3 text-white">
         <label className="px-2 py-0.5">Network ID</label>
         <input
           name="networkID"
           type="text"
-          className="form-control"
+          
           value={formData.networkID}
           onChange={handleChange}
         />
@@ -196,6 +197,7 @@ const EditNetwork = ({ onBack }) => {
         </button>
       </div>
     </form>
+    </>
   );
 };
 
