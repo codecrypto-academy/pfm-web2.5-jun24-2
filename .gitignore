@@ -134,3 +134,4 @@ dist
 back/data/*
 !back/data/*.txt
 !back/data/*.md
+!back/data/nodekey
