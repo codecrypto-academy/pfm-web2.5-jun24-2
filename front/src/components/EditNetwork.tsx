@@ -16,29 +16,13 @@ const EditNetwork = ({ onBack }) => {
     setNodes([...nodes, { type: "", name: "", ip: "", port: "" }]);
   const removeNode = (index) => setNodes(nodes.filter((_, i) => i !== index));
 
-  const [formData, setFormData] = useState({
-    networkID: "",
-    chainID: "",
-    subnet: "",
-    ipBootnode: "",
-    allocations: "",
-  });
-// Fiunción para manejar los cambios en los campos del formulario
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-//Función para manejar el envío del formulario
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
-  };
+  const handleSubmit = (event) =>{
+    event.preventDefault()
+  }
 
   return (
-    <>
+    <form className="container" onSubmit={handleSubmit}>
+      
       <div className="flex items-center">
         <h1 className="my-4 text-white mr-10">Edit Network</h1>
         <p>
@@ -51,46 +35,21 @@ const EditNetwork = ({ onBack }) => {
           </button>
         </p>
       </div>
-      <form className="container" onSubmit={handleSubmit}>
       <div className="mb-3 text-white">
-        <label className="px-2 py-0.5">Network ID</label>
-        <input
-          name="networkID"
-          type="text"
-          
-          value={formData.networkID}
-          onChange={handleChange}
-        />
+        <label className="px-2 py-0.5" >Network ID</label>
+        <input type="text" className="form-control" style={{ color: 'black' }} defaultValue="" />
       </div>
       <div className="mb-3 text-white">
         <label className="px-2 py-0.5">Chain ID</label>
-        <input
-          name="cahinId"
-          type="text"
-          className="form-control"
-          value={formData.chainID}
-          onChange={handleChange}
-        />
+        <input type="text" className="form-control" style={{ color: 'black' }} defaultValue="" />
       </div>
       <div className="mb-3 text-white">
         <label className="px-2 py-0.5">Subnet</label>
-        <input
-          name="subnet"
-          type="text"
-          className="form-control"
-          value={formData.subnet}
-          onChange={handleChange}
-        />
+        <input type="text" className="form-control"style={{ color: 'black' }} defaultValue="" />
       </div>
       <div className="mb-3 text-white">
         <label className="px-2 py-0.5">IP Bootnode</label>
-        <input
-          name="ipBootnode"
-          type="text"
-          className="form-control"
-          value={formData.ipBootnode}
-          onChange={handleChange}
-        />
+        <input type="text" className="form-control" style={{ color: 'black' }} defaultValue="" />
       </div>
       <h3 className="text-white">Allocation</h3>
       {allocations.map((allocation, index) => (
@@ -98,12 +57,10 @@ const EditNetwork = ({ onBack }) => {
           <button
             type="button"
             className="bg-red-500 text-white text-xs font-bold py-0.5 px-0.5 rounded border border-red-700 hover:bg-red-600 mr-2"
-            onClick={() => removeAllocation(index)}
-          >
+            onClick={() => removeAllocation(index)}>
             X
           </button>
           <input
-            //name="allocations"
             type="text"
             className="form-control"
             value={allocation}
@@ -111,8 +68,8 @@ const EditNetwork = ({ onBack }) => {
               const newAllocations = [...allocations];
               newAllocations[index] = e.target.value;
               setAllocations(newAllocations);
-            }}
-          />
+            }} />
+          
         </div>
       ))}
       <button
@@ -180,11 +137,7 @@ const EditNetwork = ({ onBack }) => {
           />
         </div>
       ))}
-      <button
-        type="button"
-        className="btn btn-secondary text-white"
-        onClick={addNode}
-      >
+      <button type="button" className="btn btn-secondary text-white" onClick={addNode}>
         Add Node
       </button>
       <p />
@@ -197,7 +150,6 @@ const EditNetwork = ({ onBack }) => {
         </button>
       </div>
     </form>
-    </>
   );
 };
 
