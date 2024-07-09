@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Network } from "./networkType";
+import { Network, NodesType } from "./networkType";
 
 interface AppContextType {
   isModalDelete: boolean;
@@ -7,6 +7,8 @@ interface AppContextType {
   closeModalDelete: () => void;
   loader: string;
   networks: Network[];
+  nodes: NodesType[];
+  setNodes: (value: NodesType[]) => void;
   setNetworks: (value: Network[]) => void;
   setLoader: (value: string) => void;
 }

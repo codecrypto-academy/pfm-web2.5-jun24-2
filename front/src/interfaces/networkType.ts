@@ -3,6 +3,7 @@ interface NodesType {
   Status: string;
   State: string;
   IPAddress: string;
+  Id: string;
 }
 
 interface Network {
