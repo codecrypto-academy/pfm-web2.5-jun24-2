@@ -15,6 +15,7 @@ import NodesIcon from "../assets/icons8-nodes-60.svg";
 import { FaFaucet } from "react-icons/fa";
 import { GrNodes } from "react-icons/gr";
 import useConfirm from "../hooks/useConfirm";
+import { BiColor } from "react-icons/bi";
 
 >>>>>>> 6777819 (alerta)
 
@@ -252,10 +253,12 @@ export const ListNetworks: React.FC = ({ setMenuItems }) => {
       </tbody>
     </table>
     {isOpen && (
-        <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: 20, backgroundColor: 'white', boxShadow: '0px 0px 15px rgba(0,0,0,0.2)', zIndex: 1000 }}>
-          <h4>¿Seguro que quieres borrar?</h4>
-          <button onClick={onConfirm}>Confirmar</button>
-          <button onClick={cancel}>Cancelar</button>
+        <div style={{ position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%, -50%)', padding: 20, border: '2px solid #32e4f0', backgroundColor:'white',  zIndex: 1000 }}>
+          <h4 style={{color:'black'}}>¿Seguro que quieres borrar?</h4>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+          <button style={{color:'green'}} onClick={onConfirm}>Confirmar</button>
+          <button style={{color:'red'}} onClick={cancel}>Cancelar</button>
+          </div>
         </div>
       )}
 >>>>>>> 6777819 (alerta)
