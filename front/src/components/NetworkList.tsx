@@ -3,6 +3,12 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import EditNetwork from "./EditNetwork";
 import { Network } from "./Network";
+import { FcExternal } from "react-icons/fc";
+import { FcInternal } from "react-icons/fc";
+import { MdDeleteForever } from "react-icons/md";
+import { FaFaucet } from "react-icons/fa";
+import { GrNodes } from "react-icons/gr";
+
 
 const fetchNetworks = async () => {
   const { data } = await axios.get('http://localhost:3000/api/networks');
@@ -96,26 +102,26 @@ export const ListNetworks: React.FC = ({ setMenuItems }) => {
           <tr key={index}>
             <td scope="row">
               <div>
-              <button className="bg-green-500 green-500  text-white text-sm px-4 py-2 rounded m-1">
-                UP
+              <button >
+                 <FcExternal size="50px" />
               </button>
-              <button className="bg-green-500 green-500  text-white text-sm px-4 py-2 rounded m-1">
-                DOWN
+              <button >
+                <FcInternal size="50px" color="red" />
               </button>
               </div>
               <div>
-              <button className="bg-white text-black text-sm px-4 py-2 rounded m-1">
-                Faucet
+              <button >
+              <FaFaucet size="50px" />
               </button>
-              <button className="bg-white text-black text-sm px-4 py-2 rounded m-1" onClick={()=> setMenuItems("NODE")} >
-                Nodes
+              <button  onClick={()=> setMenuItems("NODE")} >
+              <GrNodes  size="50px"/>
               </button>
               </div>
               <button
-                className="bg-red-500 red-500  text-white text-sm px-4 py-2 rounded m-1"
+                
                 onClick={() => handleDelete(index)}
               >
-                Delete
+                <MdDeleteForever size="50px" color="red"/>
               </button>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white border border-gray-300">
