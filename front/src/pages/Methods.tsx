@@ -1,12 +1,15 @@
+import { DeleteNetworkModal } from "../components/DeleteNetworkModal";
 import { MainMenu } from "../components/MainMenu";
-import { useNetwork } from "../hooks/useNetwork";
+import { useAppContext } from "../hooks/useAppContext";
 
 export const Methods = () => {
-  const { createNetwork } = useNetwork();
+  const { isModalDelete } = useAppContext();
   return (
-    <div>
-      <MainMenu />
-      <button onClick={createNetwork}>Create Network</button>
-    </div>
+    <>
+      {isModalDelete && <DeleteNetworkModal />}
+      <div>
+        <MainMenu />
+      </div>
+    </>
   );
-}
+};

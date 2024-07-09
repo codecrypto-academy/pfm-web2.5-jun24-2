@@ -1,0 +1,16 @@
+interface NodesType {
+  Name: string;
+  Status: string;
+  State: string;
+  IPAddress: string;
+}
+
+interface Network {
+  NetworkName: string;
+  NetworkID: string;
+  Gateway: string;
+  IPAddress: string;
+  Nodes: NodesType[];
+}
+
+export type { NodesType, Network };

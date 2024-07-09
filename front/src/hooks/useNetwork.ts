@@ -1,4 +1,7 @@
+import { useAppContext } from "./useAppContext";
+
 export const useNetwork = () => {
+  const { closeModalDelete, loader, setLoader } = useAppContext();
   const createNetwork = () => {
     fetch("http://localhost:3000/api/network", {
       method: "POST",
@@ -7,7 +10,7 @@ export const useNetwork = () => {
       },
       body: JSON.stringify({
         id: "myNetworkId",
-        chainId: "1234",
+        chainId: 1122,
         // subnet: "192.168.1.0/24",
         alloc: [
           {
@@ -19,8 +22,7 @@ export const useNetwork = () => {
           {
             id: "node1",
             // ip: "192.168.1.2",
-            port: 30305,
-            rpcPort: 8548,
+            port: 8888,
             type: "miner",
           },
         ],
@@ -28,7 +30,52 @@ export const useNetwork = () => {
     });
   };
 
+  const stopNetwork = (id: string) => {
+    fetch(`http://localhost:3000/api/network/${id}/stop`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: "myNetworkId",
+      }),
+    });
+  };
+
+  const startNetwork = (id: string) => {
+    fetch(`http://localhost:3000/api/network/${id}/start`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: "myNetworkId",
+      }),
+    });
+  };
+  
+  const deleteNetwork = async (id: string) => {
+    try {
+      setLoader("ON");
+      setTimeout(() => {
+        setLoader("SUCCESS");
+      }, 1500);
+      setTimeout(() => {
+        closeModalDelete();
+      }, 3500);
+      console.log({ id });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return {
     createNetwork,
+    startNetwork,
+    closeModalDelete,
+    stopNetwork,
+    deleteNetwork,
+    loader,
+    setLoader,
   };
 };
