@@ -1,13 +1,12 @@
 import { useEffect } from "react";
 import { Menu } from "../components/Menu";
 import { useMenu } from "../hooks/useMenu";
-import  EditNetwork  from "./EditNetwork";
 import { Faucet } from "./Faucet";
 import { ListNetworks } from "./NetworkList";
 
 
 export const MainMenu = () => {
-  const { menuItems, setMenuItems } = useMenu("NODE");
+  const { menuItems, setMenuItems } = useMenu("LISTNETWORK");
   useEffect(() => {
     console.log(menuItems);
   }, [menuItems]);
@@ -24,7 +23,7 @@ export const MainMenu = () => {
       {menuItems === "NODE" && <Network setMenuItems={setMenuItems}/>}
 >>>>>>> 6455c19 (vistas front)
       {menuItems === "FAUCET" && <div><Faucet /></div>}
-      {menuItems === "LISTNETWORK" && <div><ListNetworks setMenuItems={setMenuItems}/></div>}
+      {menuItems === "LISTNETWORK" && <div><ListNetworks/></div>}
       
     </main>
   );
