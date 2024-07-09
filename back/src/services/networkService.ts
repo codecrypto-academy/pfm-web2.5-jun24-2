@@ -9,11 +9,8 @@ import path from 'path';
 import { Network } from '../interfaces/network';
 import { CommandNodePair } from '../interfaces/commandNodePair';
 import * as ip from 'ip';
-
-
-
-const execAsync = promisify(exec);
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { createAccount, generateDockerCommandForNode, generateEnode, generateNodekey, getNodeName, initNetworkForNode, initNode } from './nodeService';
+import { executeCommand } from '../common/ultils';
 
 async function createNetwork(req: Request, res: Response) {
   const network:Network = req.body;
@@ -23,7 +20,7 @@ async function createNetwork(req: Request, res: Response) {
     await validateAndCreateNetwork(network);
 
     //validate nodes Ips
-    validateNodeIPs(network);
+    validateNodesIP(network);
 
     // Create accounts
     await createAccounts(network.chainId, network.nodes);
@@ -38,11 +35,10 @@ async function createNetwork(req: Request, res: Response) {
     // Initialize network  
     await initializeEthereumNodes(network.nodes, network.chainId);
 
-    await generateEnodes(network.nodes, network.chainId);
+    await getEnodes(network.nodes, network.chainId);
     
-    await initializeNodes(network);
+    await initializeNetworkNodes(network);
 
-    // Start miners
     res.status(200).send('Network initialized successfully');
   } catch (error) {
     res.status(500).send(`Error initializing network: ${error}`);
@@ -201,26 +197,7 @@ async function getGroupedNetworks() {
 const createAccounts = async (chainId: number, nodes: NetworkNode[]): Promise<void> => {
 
   for (let index = 0; index < nodes.length; index++) {
-    const node = nodes[index];
-    //const nodeIndex = index + 1;
-    const nodeName = getNodeName(node);
-    const keystorePath = `${process.cwd()}\\data\\net${chainId}\\${nodeName}\\keystore`;
-    const pwdPath = `${process.cwd()}\\data\\pwd.txt`;
-
-    const dockerCommand = `docker run --rm -v "${keystorePath}:/data/net${chainId}/${nodeName}" -v "${pwdPath}:/data/pwd.txt" ethereum/client-go:v1.13.15 account new --password /data/pwd.txt --keystore /data/net${chainId}/${nodeName}`;
-
-    try {
-      const { stdout } = await execAsync(dockerCommand);
-      const addressMatch = stdout.match(/0x[a-fA-F0-9]{40}/);
-      if (addressMatch) {        
-        node.address = addressMatch[0].startsWith('0x') ? addressMatch[0].substring(2) : addressMatch[0];
-        console.log(`Account created for ${nodeName}: ${node.address}`);
-      } else {
-        console.error(`Address not found in output for ${nodeName}`);
-      }
-    } catch (error) {
-      console.error(`Error creating account for ${nodeName}: ${error}`);
-    }
+    await createAccount(nodes, index, chainId);
   }
 };
 
@@ -297,132 +274,164 @@ const addMinerAllocations = (alloc: Alloc[], nodes: NetworkNode[]): Alloc[] => {
   return alloc;
 };
 
+
+
 // init
 async function initializeEthereumNodes(nodes: NetworkNode[], chainId: number): Promise<void> {
-  const genesisFilePath = `${process.cwd()}\\data\\net${chainId}\\genesis${chainId}.json`;
+  const genesisFilePath = path.join(process.cwd(), 'data', `net${chainId}`, `genesis${chainId}.json`);
   const dockerImage = 'ethereum/client-go:v1.13.15';
 
   const promises: Promise<void>[] = [];
 
   for (const node of nodes) {
-    const nodeName = getNodeName(node);
-    const dataDir = `${process.cwd()}\\data\\net${chainId}\\${nodeName}`;
-
-    const command = `docker run --rm -v "${dataDir}:/data/net${chainId}/${node.name}" -v "${genesisFilePath}:/data/net${chainId}/genesis.json" ${dockerImage} init --datadir /data/net${chainId}/${node.name} /data/net${chainId}/genesis.json`;
-
-    promises.push(
-      executeCommand(command).then(() => {
-        console.log(`Node ${node.name} initialized.`);
-      }).catch((error) => {
-        console.error(`Failed to initialize node ${node.name}: ${error}`);
-      })
-    );
+    initNetworkForNode(node, chainId, genesisFilePath, dockerImage, promises);
   }
   await Promise.all(promises);
 }
 
-async function executeCommand(command: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        reject(`Error: ${error.message}`);
-      } else if (stderr) {
-        console.error(`stderr: ${stderr}`);
-        resolve();
-      } else {
-        console.log(`stdout: ${stdout}`);
-        resolve();
+async function getEnodes(nodes: NetworkNode[], chainId:number) {
+  const promises: Promise<void>[] = [];
+  for (const node of nodes) {
+    const promise = generateNodekey(node, chainId);
+    promises.push(promise);
+  }
+  await Promise.all(promises);
+
+  for (const node of nodes) {
+    const promise = generateEnode(node, chainId);
+    promises.push(promise);
+  }
+  await Promise.all(promises);
+}
+
+
+async function initializeNetworkNodes(network: Network) {
+  const promises: Promise<void>[] = [];
+  const commandNodePairs = generateDockerCommands(network);
+  //console.log("COMMANDS: ", commandNodePairs);
+
+  for (const { node, command } of commandNodePairs) {
+    const promise = initNode(command, node);
+    promises.push(promise);
+  }
+  await Promise.all(promises);
+}
+
+function generateDockerCommands(network: Network): CommandNodePair[] {
+  const usedPorts = new Set<number>();
+  return network.nodes.map(node => generateDockerCommandForNode(node, network.id, network.chainId, usedPorts));
+}
+
+async function addNewNodes(req: Request, res: Response) {
+  try{
+    const network:Network = req.body;
+
+    // validar que la red exista
+    await validateNetworkExists(network);
+    
+    // validar que la ip sea valida
+    validateNodesIP(network);
+    
+    // validar que los nodos no existan: nombre    
+    await validateNodesInNetwork(network);
+
+    // validar que los puertos sean validos
+    console.log("validateNodePorts")
+    await validateNodePorts(network);
+
+    // crear cuenta
+    console.log("createAccounts")
+    await createAccounts(network.chainId, network.nodes);
+
+    const genesisPath = path.join(process.cwd(), 'data', `net${network.chainId}`);
+
+    // Initialize network  
+    await initializeEthereumNodes(network.nodes, network.chainId);
+
+    await getEnodes(network.nodes, network.chainId);
+    
+    await initializeNetworkNodes(network);
+
+    res.status(200).send('Network initialized successfully');
+  }  
+  catch (error) {
+    res.status(500).send(`Error initializing network: ${error}`);
+  }
+}
+
+async function validateNodePorts(network: Network): Promise<void> {
+  const containers = await listContainers();
+  const usedPorts = new Set<number>();
+
+  containers.forEach(container => {
+    container.Ports.forEach((portMapping: any) => {
+      if (portMapping.PublicPort) {
+        usedPorts.add(portMapping.PublicPort);
       }
     });
   });
-}
 
-function getNodeName(node:NetworkNode) {
-  return `node-${node.type}_${node.name}`;
-}
-
-function getEnvPath(chainId:number) {
-  return path.join(process.cwd(), 'data', `net${chainId}`);  
-}
-
-async function generateEnodes(nodes: NetworkNode[], chainId:number) {
-  const promises: Promise<void>[] = [];
-  for (const node of nodes) {
-    const nodeName = getNodeName(node);
-    const nodekeyPath = path.join(getEnvPath(chainId), nodeName, 'nodekey');
-    const nodekeyCommand = `bootnode -genkey "${nodekeyPath}"`;
-    
-    const promise = execAsync(nodekeyCommand)
-      .then(() => {
-        console.log(`Node key generated for ${nodeName}`);
-      })
-      .catch((error) => {
-        console.error(`Error generating node key for ${nodeName}:`, error);
-      });
-    promises.push(promise);
+  for (const node of network.nodes) {
+    if (node.port && usedPorts.has(node.port)) {
+      throw new Error(`Port ${node.port} for node ${node.name} is already in use.`);
+    }
   }
-  await Promise.all(promises);
 
-  for (const node of nodes) {
-    const nodeName = getNodeName(node);
-    const nodekeyPath = path.join(getEnvPath(chainId), nodeName, 'nodekey');
-    const enodeCommand = `bootnode -nodekey "${nodekeyPath}" -writeaddress`;
-
-    const promise = execAsync(enodeCommand)
-      .then((result) => {
-        console.log("ENODE:", result)        
-        node.enode = `enode://${result.stdout.replace(/\n$/, '')}@${nodeName}:30303`;
-      })
-      .catch((error) => {
-        console.error(`Error generating node key for ${nodeName}:`, error);
-      });
-    promises.push(promise);
-  }
-  await Promise.all(promises);
+  console.log('All node ports are valid and not in use.');
 }
 
-async function initializeNodes(network: Network) {
-  const promises: Promise<void>[] = [];
-  const commandNodePairs = generateDockerCommands(network);
-  console.log("COMMANDS: ", commandNodePairs);
-
-  for (const { node, command } of commandNodePairs) {
-    const promise = executeCommand(command)
-      .then(() => {
-        console.log(`Node key generated for ${node.name}`);
-      })
-      .catch((error) => {
-        console.error(`Error generating node key for ${node.name}:`, error);
-      });
-
-    promises.push(promise);
+async function validateNodesInNetwork(network: Network): Promise<void> {
+  const networksMap = await getGroupedNetworks();
+  const networkName = network.id;
+  
+  let networkInfo = null;
+  for (const networkId in networksMap) {
+    if (networksMap[networkId].NetworkName === networkName) {
+      networkInfo = networksMap[networkId];
+      break;
+    }
   }
-  await Promise.all(promises);
+
+  if (!networkInfo) {
+    throw new Error(`Network with name ${networkName} does not exist.`);
+  }
+
+  const existingNodes = networkInfo.Nodes.map((node: any) => node.Name);
+
+  for (const node of network.nodes) {
+    if (existingNodes.includes(node.name)) {
+      throw new Error(`Node with name ${node.name} already exists in network ${networkName}.`);
+    }
+  }
+
+  console.log(`All nodes are valid and do not already exist in the network ${networkName}.`);
 }
+async function validateNetworkExists(network: Network): Promise<void> {
+  const networkName = network.id;
 
-function generateDockerCommands(networkSettings: Network): CommandNodePair[] {
-  const usedPorts = new Set<number>();
-  const commands = networkSettings.nodes.map(node => {
-      const nodeName = getNodeName(node);
-      const baseCommand = `docker run -d --name ${nodeName} --network ${networkSettings.id} --label ${networkSettings.id} --ip ${node.ip}`;
-      const volumeMappings = `-v "${process.cwd()}/data/net${networkSettings.chainId}/${nodeName}:/root/.ethereum" -v "${process.cwd()}/data/pwd.txt:/root/.ethereum/password.txt"`;
-      const ports = node.port ? `-p ${node.port}:8545` : '';
-      const alwaysPort = node.port && !usedPorts.has(30303) ? `-p 30303:30303` : '';
-      if (node.port) {
-          usedPorts.add(node.port);
-      }
-      const baseGethCommand = `ethereum/client-go:v1.13.15 --networkid ${networkSettings.chainId}`;
-      const minerConfig = node.type === 'miner' ? `--mine --miner.etherbase="${node.address}"` : '';
-      const httpConfig = `--http --http.addr "0.0.0.0" --http.port 8545 --http.api "admin,eth,debug,miner,net,txpool,personal,web3" --http.corsdomain "*"`;
-      const syncMode = `--syncmode "full"`;
-      const unlockAccount = `--unlock "${node.address}" --password "/root/.ethereum/password.txt" --allow-insecure-unlock`;
-      const bootnode = `--bootnodes "${node.enode}"`;
+  try {
+    const existingNetworks = await new Promise<string>((resolve, reject) => {
+      exec(`docker network ls --filter name=^${networkName}$ --format "{{ .Name }}"`, (error, stdout, stderr) => {
+        if (error) {
+          reject(`Error: ${error.message}`);
+        } else if (stderr) {
+          console.error(`stderr: ${stderr}`);
+          resolve('');
+        } else {
+          resolve(stdout.toString().trim());
+        }
+      });
+    });
 
-      const command = `${baseCommand} ${volumeMappings} ${ports} ${alwaysPort} ${baseGethCommand} ${minerConfig} ${httpConfig} ${syncMode} --port 30303 ${unlockAccount} ${bootnode}`;
-      return { node, command };
-  });
+    if (!existingNetworks) {
+      throw new Error(`Network ${networkName} does not exist.`);
+    }
 
-  return commands;
+    console.log(`Network ${networkName} exists.`);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }
 
 async function validateAndCreateNetwork(networkSettings: Network): Promise<void> {
@@ -455,7 +464,7 @@ async function validateAndCreateNetwork(networkSettings: Network): Promise<void>
   }
 }
 
-function validateNodeIPs(network: Network): void {
+function validateNodesIP(network: Network): void {
   const subnetInfo = ip.subnet(network.subnet.split('/')[0], network.subnet.split('/')[1]);
   const broadcastAddress = subnetInfo.broadcastAddress;
   const gatewayAddress = ip.cidrSubnet(network.subnet).firstAddress; // La dirección de gateway es la primera dirección en la subred
@@ -475,5 +484,6 @@ export {
   restartNetwork,
   startNetwork,
   listNetworks,
-  listNodes
+  listNodes,
+  addNewNodes
 };

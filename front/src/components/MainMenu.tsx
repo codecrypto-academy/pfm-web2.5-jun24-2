@@ -20,8 +20,8 @@ export const MainMenu = () => {
     <main className="bg-[#155163]  flex justify-center items-center flex-col pb-[25px] h-screen">
       <Menu typeofMenu={menuItems} changeMenu={changeMenu} />
       {menuItems === "FAUCET" && <div><Faucet /></div>}
-      {menuItems === "LISTNETWORK" && <div><ListNetworks /></div>}
-      {menuItems === "EDITNETWORK" && <div><EditNetwork /></div>}
+      {menuItems === "LISTNETWORK" && <div><ListNetworks setMenuItems={setMenuItems}/></div>}
+      
     </main>
   );
 };
