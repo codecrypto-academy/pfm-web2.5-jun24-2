@@ -29,19 +29,6 @@ export const Menu = ({ typeofMenu = "NODE", changeMenu }: { typeofMenu: string, 
       >
         FAUCET
       </button>
-
-      <button
-        onClick={() => {
-          changeMenu("NODE");
-        }}
-        className={`text-4xl ${
-          typeofMenu === "NODE"
-            ? "text-[#155163] border-b-4 border-[#155163]"
-            : "text-white"
-        }`}
-      >
-        NODE
-      </button>
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Menu } from "../components/Menu";
-import { Network } from "../components/Network";
 import { useMenu } from "../hooks/useMenu";
 import  EditNetwork  from "./EditNetwork";
 import { Faucet } from "./Faucet";
@@ -18,9 +17,8 @@ export const MainMenu = () => {
   };
 
   return (
-    <main className="bg-[#155163]  flex justify-center items-center flex-col pb-[25px]">
+    <main className="bg-[#155163]  flex justify-center items-center flex-col pb-[25px] h-screen">
       <Menu typeofMenu={menuItems} changeMenu={changeMenu} />
-      {menuItems === "NODE" && <Network setMenuItems={setMenuItems}/>}
       {menuItems === "FAUCET" && <div><Faucet /></div>}
       {menuItems === "LISTNETWORK" && <div><ListNetworks setMenuItems={setMenuItems}/></div>}
       
