@@ -30,7 +30,23 @@ async function restartContainer(containerId: string) {
 
 async function removeContainer(containerId: string) {
   const container = docker.getContainer(containerId);
-  return await container.remove();
+
+  try {
+    // Intentar detener el contenedor primero
+    await container.stop();
+    console.log(`Container ${containerId} stopped successfully.`);
+  } catch (stopError: any) {
+    console.error(`Failed to stop container ${containerId}. It may already be stopped. Error: ${stopError.message}`);
+  }
+
+  try {
+    // Luego intentar eliminar el contenedor
+    await container.remove();
+    console.log(`Container ${containerId} removed successfully.`);
+  } catch (removeError: any) {
+    console.error(`Failed to remove container ${containerId}. Error: ${removeError.message}`);
+    throw removeError;
+  }
 }
 
 async function listContainers() {
