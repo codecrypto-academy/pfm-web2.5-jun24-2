@@ -11,6 +11,7 @@ import { FaFaucet } from "react-icons/fa";
 import { GrNodes } from "react-icons/gr";
 import useConfirm from "../hooks/useConfirm";
 import { BiColor } from "react-icons/bi";
+import EditNetwork from "./EditNetwork";
 
 
 const fetchNetworks = async () => {
@@ -23,30 +24,30 @@ export const ListNetworks: React.FC = () => {
     queryKey: ["networks"],
     queryFn: fetchNetworks,
   });
-  const [showEdit, setShowEdit] = useState(false);
-  const { stopNetwork, startNetwork, restartNetwork } = useNetwork();
+ // const [showEdit, setShowEdit] = useState(false);
+ // const { stopNetwork, startNetwork, restartNetwork } = useNetwork();
 
-export const ListNetworks: React.FC = ({ setMenuItems }) => {
- /* const { data, error, isLoading } = useQuery({
-    queryKey: ['networks'],
-    queryFn: fetchNetworks
-  });*/
-    let data = {
-      "57a7e0fe67d1f4fb35da7b79f1431de6975b7d9e156c207c0db7d76e0ea52b04": {
-          "NetworkName": "bridge",
-          "NetworkID": "57a7e0fe67d1f4fb35da7b79f1431de6975b7d9e156c207c0db7d76e0ea52b04",
-          "Gateway": "172.17.0.1",
-          "IPAddress": "172.17.0.2",
-          "Nodes": [
-              {
-                  "Name": "/eth-node-01",
-                  "Status": "Up 5 minutes",
-                  "State": "running",
-                  "IPAddress": "172.17.0.2"
-              }
-          ]
-      }
-  }
+// export const ListNetworks: React.FC = ({ setMenuItems }) => {
+//  /* const { data, error, isLoading } = useQuery({
+//     queryKey: ['networks'],
+//     queryFn: fetchNetworks
+//   });*/
+//     let data = {
+//       "57a7e0fe67d1f4fb35da7b79f1431de6975b7d9e156c207c0db7d76e0ea52b04": {
+//           "NetworkName": "bridge",
+//           "NetworkID": "57a7e0fe67d1f4fb35da7b79f1431de6975b7d9e156c207c0db7d76e0ea52b04",
+//           "Gateway": "172.17.0.1",
+//           "IPAddress": "172.17.0.2",
+//           "Nodes": [
+//               {
+//                   "Name": "/eth-node-01",
+//                   "Status": "Up 5 minutes",
+//                   "State": "running",
+//                   "IPAddress": "172.17.0.2"
+//               }
+//           ]
+//       }
+//   }
   const [networks, setNetworks] = useState<any[]>([]);
 
   useEffect(() => {
