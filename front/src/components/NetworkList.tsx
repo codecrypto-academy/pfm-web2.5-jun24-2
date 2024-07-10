@@ -8,9 +8,7 @@ import { Network, NodesType } from "../interfaces/networkType";
 import { FcExternal, FcInternal } from "react-icons/fc";
 import { MdDeleteForever } from "react-icons/md";
 <<<<<<< HEAD
-import EditNetwork from "./EditNetwork";
-import FaucetIcon from "../assets/icons8-faucet-90.svg";
-import NodesIcon from "../assets/icons8-nodes-60.svg";
+
 =======
 import { FaFaucet } from "react-icons/fa";
 import { GrNodes } from "react-icons/gr";
