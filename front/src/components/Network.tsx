@@ -18,10 +18,13 @@ export const Network = ({ setMenuItems }) => {
   return (
     <div>
       <p>
-      <button onClick={() => setMenuItems("LISTNETWORK")}  type="submit"
-          className="bg-[#155163] w-44 h-10 hover:bg-[#32e4f0] hover:text-black  text-white rounded-lg ">
-        Return to Networks
-      </button>
+        <button
+          onClick={() => setMenuItems("LISTNETWORK")}
+          type="submit"
+          className="bg-[#155163] w-44 h-10 hover:bg-[#32e4f0] hover:text-black  text-white rounded-lg "
+        >
+          Return to Networks
+        </button>
       </p>
       {listOfNetworks.map((network, index) => (
         <div
@@ -51,11 +54,7 @@ export const Network = ({ setMenuItems }) => {
           >
             FAUCET
           </button>
-          <button
-            className="bg-[#32e4f0] h-11 text-white w-36"
-          >
-            RESTART
-          </button>
+          <button className="bg-[#32e4f0] h-11 text-white w-36">RESTART</button>
         </div>
       ))}
     </div>

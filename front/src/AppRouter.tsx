@@ -3,11 +3,13 @@ import { Home } from "./pages/Home";
 import { Methods } from "./pages/Methods";
 import { AppProvider } from "./context/AppProvider";
 import { Nodes } from "./pages/Nodes";
+import { Navbar } from "./components/Navbar";
 
 export const AppRouter = () => {
   
   return (
     <AppProvider>
+      <Navbar />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />

@@ -16,7 +16,7 @@ const fetchNetworks = async () => {
   return data;
 };
 
-export const ListNetworks: React.FC = () => {
+export const ListNetworks: React.FC = ({ setMenuItems }) => {
   const { data, error, isLoading } = useQuery({
     queryKey: ["networks"],
     queryFn: fetchNetworks,
@@ -86,12 +86,12 @@ export const ListNetworks: React.FC = () => {
                   </button>
                 </div>
                 <div>
-                  <button>
-                    <img src={FaucetIcon} alt="" className="w-10"/>
+                  <button onClick={()=> setMenuItems("FAUCET")}>
+                    <img src={FaucetIcon} alt="" className="w-10" />
                   </button>
                   <Link to={`/nodes/${network.NetworkID}`}>
                     <button>
-                      <img src={NodesIcon} alt="" className="w-10"/>
+                      <img src={NodesIcon} alt="" className="w-10" />
                     </button>
                   </Link>
                 </div>

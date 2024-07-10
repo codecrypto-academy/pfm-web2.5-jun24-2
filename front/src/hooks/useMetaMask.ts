@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useAppContext } from "./useAppContext";
 
 declare global {
   interface Window {
@@ -10,7 +10,7 @@ declare global {
 }
 
 export const useMetaMask = () => {
-  const [account, setAccount] = useState<string>("");
+  const { setAccount, account } = useAppContext();
   
   const connectMetaMask = async () => {
     if (window.ethereum) {

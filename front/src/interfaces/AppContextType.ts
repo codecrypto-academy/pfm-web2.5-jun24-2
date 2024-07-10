@@ -8,6 +8,8 @@ interface AppContextType {
   loader: string;
   networks: Network[];
   nodes: NodesType[];
+  account: string;
+  setAccount: (value: string) => void;
   setNodes: (value: NodesType[]) => void;
   setNetworks: (value: Network[]) => void;
   setLoader: (value: string) => void;

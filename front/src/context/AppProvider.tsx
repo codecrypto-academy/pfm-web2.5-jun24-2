@@ -5,6 +5,7 @@ import { Network, NodesType } from "../interfaces/networkType";
 const AppContext = createContext<AppContextType | null>(null);
 
 const AppProvider = ({ children }: AppProviderProps) => {
+  const [account, setAccount] = useState<string>("");
   const [networks, setNetworks] = useState<Network[]>([]);
   const [isModalDelete, setIsModalDelete] = useState(false);
   const [nodes, setNodes] = useState<NodesType[]>([]);
@@ -29,8 +30,10 @@ const AppProvider = ({ children }: AppProviderProps) => {
       setNetworks,
       nodes,
       setNodes,
+      account,
+      setAccount,
     }),
-    [isModalDelete, loader, networks, nodes]
+    [isModalDelete, loader, networks, nodes, account]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
