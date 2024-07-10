@@ -7,15 +7,11 @@ import { Link } from "react-router-dom";
 import { Network, NodesType } from "../interfaces/networkType";
 import { FcExternal, FcInternal } from "react-icons/fc";
 import { MdDeleteForever } from "react-icons/md";
-<<<<<<< HEAD
-
-=======
 import { FaFaucet } from "react-icons/fa";
 import { GrNodes } from "react-icons/gr";
 import useConfirm from "../hooks/useConfirm";
 import { BiColor } from "react-icons/bi";
 
->>>>>>> 6777819 (alerta)
 
 const fetchNetworks = async () => {
   const { data } = await axios.get("http://localhost:3000/api/networks");
