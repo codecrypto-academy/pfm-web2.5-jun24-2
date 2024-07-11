@@ -1,21 +1,18 @@
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { useNetwork } from "../hooks/useNetwork";
 import { Loader } from "./Loader";
 import { Success } from "./Success";
 import { useEffect } from "react";
+import { useNodes } from "../hooks/useNodes";
+import { useParams } from "react-router-dom";
 
-export const DeleteNetworkModal = () => {
-  const {
-    deleteNetwork,
-    closeModalDeleteNetwork,
-    loader,
-    setLoader,
-    networkId,
-  } = useNetwork();
-  
+export const DeleteNodeModal = () => {
+  const { deleteNode, closeModalDeleteNode, loader, setLoader, nodeId } =
+    useNodes();
+    const { id } = useParams<{ id: string }>();
+
   useEffect(() => {
     setLoader("OFF");
-  }, [networkId, setLoader]);
+  }, [nodeId, setLoader]);
 
   return (
     <>
@@ -42,7 +39,7 @@ export const DeleteNetworkModal = () => {
             <div className=" gap-4 flex items-center flex-wrap justify-center mt-5">
               <button
                 className="bg-[#32e4f0] p-2 w-40 text-center text-white font-bold flex justify-center items-center"
-                onClick={deleteNetwork}
+                onClick={()=> deleteNode(id ?? '')}
               >
                 {loader === "ON" && <Loader />}
                 {loader === "SUCCESS" && <Success />}
@@ -51,7 +48,7 @@ export const DeleteNetworkModal = () => {
 
               <button
                 className=" font-text border-[#32e4f0] border-2  p-2 w-40 text-center font-bold text-white"
-                onClick={closeModalDeleteNetwork}
+                onClick={closeModalDeleteNode}
               >
                 CANCEL
               </button>

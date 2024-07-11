@@ -1,203 +1,298 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { NetworkCreate } from "../interfaces/networkCreate";
+import { useNetwork } from "../hooks/useNetwork";
 
-const EditNetwork = ({ onBack }) => {
-  const [allocations, setAllocations] = useState(["adress", "0x adress"]);
-  const [nodes, setNodes] = useState([
-    { type: "MINER", name: "", ip: "", port: "" },
-    { type: "RPC", name: "", ip: "", port: "" },
-    { type: "NORMAL", name: "", ip: "", port: "" },
-  ]);
-
-  const addAllocation = () => setAllocations([...allocations, ""]);
-  const removeAllocation = (index) =>
-    setAllocations(allocations.filter((_, i) => i !== index));
-
-  const addNode = () =>
-    setNodes([...nodes, { type: "", name: "", ip: "", port: "" }]);
-  const removeNode = (index) => setNodes(nodes.filter((_, i) => i !== index));
-
-  const [formData, setFormData] = useState({
-    networkID: "",
-    chainID: "",
+const EditNetwork = ({ onBack }: { onBack: () => void }) => {
+  const [networkData, setNetworkData] = useState<NetworkCreate>({
+    id: "",
+    chainId: 0,
     subnet: "",
-    ipBootnode: "",
-    allocations: "",
+    alloc: [{ address: "", balance: "" }],
+    nodes: [
+      { name: "", type: "", ip: "", port: undefined },
+      { name: "", type: "", ip: "", port: undefined },
+    ],
   });
-// Fiunción para manejar los cambios en los campos del formulario
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    field: string,
+    index?: number
+  ) => {
+    const value = e.target.value;
+    setNetworkData((prevData) => {
+      if (field in prevData) {
+        return { ...prevData, [field]: value };
+      } else if (field.startsWith("alloc")) {
+        const newAlloc = [...prevData.alloc];
+        newAlloc[index!][field.split(".")[1]] = value;
+        return { ...prevData, alloc: newAlloc };
+      } else if (field.startsWith("nodes")) {
+        const newNodes = [...prevData.nodes];
+        newNodes[index!][field.split(".")[1]] = value;
+        return { ...prevData, nodes: newNodes };
+      }
+      return prevData;
+    });
+  };
+
+  const handleAddAlloc = () => {
+    setNetworkData((prevData) => ({
+      ...prevData,
+      alloc: [...prevData.alloc, { address: "", balance: "" }],
     }));
   };
-//Función para manejar el envío del formulario
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
+
+  const handleAddNode = () => {
+    setNetworkData((prevData) => ({
+      ...prevData,
+      nodes: [
+        ...prevData.nodes,
+        { name: "", type: "", ip: "", port: undefined },
+      ],
+    }));
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await createNetwork(networkData).then(() => {
+      onBack();
+    });
+  };
+  const { createNetwork } = useNetwork();
   return (
-    <>
-      <div className="flex items-center">
-        <h1 className="my-4 text-white mr-10">Edit Network</h1>
-        <p>
-          <button
-            type="button"
-            onClick={onBack}
-            className="bg-[#155163] w-36 h-8 hover:bg[#32e4f0] text-white rounded-lg text-sm"
-          >
-            Return to Networks
-          </button>
-        </p>
-      </div>
-      <form className="container" onSubmit={handleSubmit}>
-      <div className="mb-3 text-white">
-        <label className="px-2 py-0.5">Network ID</label>
-        <input
-          name="networkID"
-          type="text"
-          
-          value={formData.networkID}
-          onChange={handleChange}
-        />
-      </div>
-      <div className="mb-3 text-white">
-        <label className="px-2 py-0.5">Chain ID</label>
-        <input
-          name="cahinId"
-          type="text"
-          className="form-control"
-          value={formData.chainID}
-          onChange={handleChange}
-        />
-      </div>
-      <div className="mb-3 text-white">
-        <label className="px-2 py-0.5">Subnet</label>
-        <input
-          name="subnet"
-          type="text"
-          className="form-control"
-          value={formData.subnet}
-          onChange={handleChange}
-        />
-      </div>
-      <div className="mb-3 text-white">
-        <label className="px-2 py-0.5">IP Bootnode</label>
-        <input
-          name="ipBootnode"
-          type="text"
-          className="form-control"
-          value={formData.ipBootnode}
-          onChange={handleChange}
-        />
-      </div>
-      <h3 className="text-white">Allocation</h3>
-      {allocations.map((allocation, index) => (
-        <div key={index} className="input-group mb-3">
-          <button
-            type="button"
-            className="bg-red-500 text-white text-xs font-bold py-0.5 px-0.5 rounded border border-red-700 hover:bg-red-600 mr-2"
-            onClick={() => removeAllocation(index)}
-          >
-            X
-          </button>
-          <input
-            //name="allocations"
-            type="text"
-            className="form-control"
-            value={allocation}
-            onChange={(e) => {
-              const newAllocations = [...allocations];
-              newAllocations[index] = e.target.value;
-              setAllocations(newAllocations);
-            }}
-          />
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white shadow-sm ring-1 p-6 rounded-md mt-5 w-[725px]"
+    >
+      <div className="border-t-4 mt-3 py-5">
+        <div className="w-[100%]">
+          <div className="w-[100%] justify-center flexr flex-col">
+            <label
+              htmlFor="id"
+              className="block text-sm font-medium leading-6 text-gray-900 text-left"
+            >
+              Network ID - Network Name
+            </label>
+            <div className="mt-2 w-[100%]">
+              <input
+                id="id"
+                name="id"
+                type="text"
+                value={networkData.id}
+                onChange={(e) => handleChange(e, "id")}
+                required
+                className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
+              />
+            </div>
+          </div>
         </div>
-      ))}
-      <button
-        type="button"
-        className="btn btn-secondary mb-4 text-white"
-        onClick={addAllocation}
-      >
-        Add Allocation
-      </button>
-      <h3 className="text-white">Nodes</h3>
-      {nodes.map((node, index) => (
-        <div key={index} className="d-flex mb-3">
-          <button
-            type="button"
-            className="bg-red-500 text-white text-xs font-bold py-0.5 px-0.5 rounded border border-red-700 hover:bg-red-600 mr-2"
-            onClick={() => removeNode(index)}
-          >
-            X
-          </button>
-          <select
-            className="form-select me-2"
-            value={node.type}
-            onChange={(e) => {
-              const newNodes = [...nodes];
-              newNodes[index].type = e.target.value;
-              setNodes(newNodes);
-            }}
-          >
-            <option value="MINER">MINER</option>
-            <option value="RPC">RPC</option>
-            <option value="NORMAL">NORMAL</option>
-          </select>
-          <input
-            type="text"
-            className="form-control me-2"
-            placeholder="Name"
-            value={node.name}
-            onChange={(e) => {
-              const newNodes = [...nodes];
-              newNodes[index].name = e.target.value;
-              setNodes(newNodes);
-            }}
-          />
-          <input
-            type="text"
-            className="form-control me-2"
-            placeholder="IP"
-            value={node.ip}
-            onChange={(e) => {
-              const newNodes = [...nodes];
-              newNodes[index].ip = e.target.value;
-              setNodes(newNodes);
-            }}
-          />
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Port"
-            value={node.port}
-            onChange={(e) => {
-              const newNodes = [...nodes];
-              newNodes[index].port = e.target.value;
-              setNodes(newNodes);
-            }}
-          />
+        <div className="w-[100%] justify-center flex items-center gap-5">
+          <div className="w-[100%] justify-center flexr flex-col">
+            <label
+              htmlFor="chainId"
+              className="block text-sm font-medium leading-6 text-gray-900 text-left"
+            >
+              Chain ID
+            </label>
+            <div className="mt-2 w-[100%]">
+              <input
+                id="chainId"
+                name="chainId"
+                type="number"
+                value={networkData.chainId}
+                onChange={(e) => handleChange(e, "chainId")}
+                required
+                className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
+              />
+            </div>
+          </div>
+
+          <div className="w-[100%] justify-center flexr flex-col">
+            <label
+              htmlFor="subnet"
+              className="block text-sm font-medium leading-6 text-gray-900 text-left"
+            >
+              Subnet
+            </label>
+            <div className="mt-2 w-[100%]">
+              <input
+                id="subnet"
+                name="subnet"
+                type="text"
+                value={networkData.subnet}
+                onChange={(e) => handleChange(e, "subnet")}
+                required
+                className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
+              />
+            </div>
+          </div>
         </div>
-      ))}
-      <button
-        type="button"
-        className="btn btn-secondary text-white"
-        onClick={addNode}
-      >
-        Add Node
-      </button>
-      <p />
-      <div className="flex justify-center items-center py-4">
+      </div>
+      <div className="border-t-4 border-b-4 py-5">
+        {networkData.alloc.map((alloc, index) => (
+          <div
+            key={index}
+            className="w-[100%] justify-center flex items-center gap-5 mt-3 py-5"
+          >
+            <div className="w-[100%] justify-center flexr flex-col">
+              <label
+                htmlFor={`allocAddress${index}`}
+                className="block text-sm font-medium leading-6 text-gray-900 text-left"
+              >
+                Address
+              </label>
+              <div className="mt-2 w-[100%]">
+                <input
+                  id={`allocAddress${index}`}
+                  name={`allocAddress${index}`}
+                  type="text"
+                  value={alloc.address}
+                  onChange={(e) => handleChange(e, `alloc.address`, index)}
+                  required
+                  className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
+                />
+              </div>
+            </div>
+            <div className="w-[100%] justify-center flexr flex-col">
+              <label
+                htmlFor={`allocBalance${index}`}
+                className="block text-sm font-medium leading-6 text-gray-900 text-left"
+              >
+                Balance
+              </label>
+              <div className="mt-2 w-[100%]">
+                <input
+                  id={`allocBalance${index}`}
+                  name={`allocBalance${index}`}
+                  type="text"
+                  value={alloc.balance}
+                  onChange={(e) => handleChange(e, `alloc.balance`, index)}
+                  required
+                  className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={handleAddAlloc}
+          className="bg-[#155163] border-2 border-[#32e4f0] text-[#32e4f0] p-2 w-44"
+        >
+          Add Allocation
+        </button>
+      </div>
+      <div className="border-t-4 mt-3 py-5 border-b-4">
+        {networkData.nodes.map((node, index) => (
+          <div
+            key={index}
+            className="w-[100%] justify-center flex items-center gap-5 mt-3"
+          >
+            <div className="w-[100%] justify-center flexr flex-col">
+              <label
+                htmlFor={`nodeName${index}`}
+                className="block text-sm font-medium leading-6 text-gray-900 text-left"
+              >
+                Node Name
+              </label>
+              <div className="mt-2 w-[100%]">
+                <input
+                  id={`nodeName${index}`}
+                  name={`nodeName${index}`}
+                  type="text"
+                  value={node.name}
+                  onChange={(e) => handleChange(e, `nodes.name`, index)}
+                  required
+                  className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
+                />
+              </div>
+              <label
+                htmlFor={`nodeType${index}`}
+                className="block text-sm font-medium leading-6 text-gray-900 text-left"
+              >
+                Node Type
+              </label>
+              <div className="mt-2 w-[100%]">
+                <select
+                  id={`nodeType${index}`}
+                  name={`nodeType${index}`}
+                  value={node.type}
+                  onChange={(e) => handleChange(e, `nodes.type`, index)}
+                  required
+                  className="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                >
+                  <option value="">Select Node Type</option>
+                  <option value="MINER">MINER</option>
+                  <option value="RPC">RPC</option>
+                  <option value="NORMAL">NORMAL</option>
+                </select>
+              </div>
+            </div>
+            <div className="w-[100%] justify-center flexr flex-col">
+              <label
+                htmlFor={`nodeIp${index}`}
+                className="block text-sm font-medium leading-6 text-gray-900 text-left"
+              >
+                Node IP
+              </label>
+              <div className="mt-2 w-[100%]">
+                <input
+                  id={`nodeIp${index}`}
+                  name={`nodeIp${index}`}
+                  type="text"
+                  value={node.ip}
+                  onChange={(e) => handleChange(e, `nodes.ip`, index)}
+                  required
+                  className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
+                />
+              </div>
+
+              <label
+                htmlFor={`nodePort${index}`}
+                className="block text-sm font-medium leading-6 text-gray-900 text-left"
+              >
+                Node Port
+              </label>
+              <div className="mt-2 w-[100%]">
+                <input
+                  id={`nodePort${index}`}
+                  name={`nodePort${index}`}
+                  type="number"
+                  value={node.port || ""}
+                  onChange={(e) => handleChange(e, `nodes.port`, index)}
+                  required
+                  className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={handleAddNode}
+          className="bg-[#155163] border-2 border-[#32e4f0] text-[#32e4f0] p-2 mt-4 w-44"
+        >
+          Add Node
+        </button>
+      </div>
+
+      <div className="mt-4 w-[100%]">
         <button
           type="submit"
-          className="bg-[#155163] w-36 h-8 hover:bg-[#32e4f0] hover:text-black text-white rounded-lg"
+          className="bg-[#32e4f0] h-11 text-white mt-7 p-2 w-full text-center"
         >
-          Enviar
+          SUBMIT
+        </button>
+        <button
+          type="button"
+          className="bg-[#155163] border-2 border-[#32e4f0] text-[#32e4f0] h-11  mt-7 p-2 w-full text-center"
+          onClick={onBack}
+        >
+          CANCEL
         </button>
       </div>
     </form>
-    </>
   );
 };
 

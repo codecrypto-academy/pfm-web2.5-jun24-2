@@ -7,23 +7,37 @@ const AppContext = createContext<AppContextType | null>(null);
 const AppProvider = ({ children }: AppProviderProps) => {
   const [account, setAccount] = useState<string>("");
   const [networks, setNetworks] = useState<Network[]>([]);
+  const [nodeId, setNodeId] = useState<string>("");
   const [isModalDelete, setIsModalDelete] = useState(false);
   const [nodes, setNodes] = useState<NodesType[]>([]);
   const [loader, setLoader] = useState("OFF");
+  const [networkId, setNetworkId] = useState<string>("");
 
-  const openModalDelete = () => {
+  const openModalDeleteNetwork = (id: string) => {
+    setNetworkId(id);
     setIsModalDelete(true);
   };
 
-  const closeModalDelete = () => {
+  const closeModalDeleteNetwork = () => {
+    setNetworkId("");
+    setIsModalDelete(false);
+  };
+
+  const openModalDeleteNode = (id: string) => {
+    setNodeId(id);
+    setIsModalDelete(true);
+  };
+
+  const closeModalDeleteNode = () => {
+    setNodeId("");
     setIsModalDelete(false);
   };
 
   const value = useMemo(
     () => ({
       isModalDelete,
-      openModalDelete,
-      closeModalDelete,
+      openModalDeleteNetwork,
+      closeModalDeleteNetwork,
       loader,
       setLoader,
       networks,
@@ -32,8 +46,14 @@ const AppProvider = ({ children }: AppProviderProps) => {
       setNodes,
       account,
       setAccount,
+      networkId,
+      setNetworkId,
+      nodeId,
+      setNodeId,
+      openModalDeleteNode,
+      closeModalDeleteNode,
     }),
-    [isModalDelete, loader, networks, nodes, account]
+    [isModalDelete, loader, networks, nodes, account, networkId, nodeId]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

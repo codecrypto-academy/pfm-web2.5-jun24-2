@@ -3,12 +3,18 @@ import { Network, NodesType } from "./networkType";
 
 interface AppContextType {
   isModalDelete: boolean;
-  openModalDelete: () => void;
-  closeModalDelete: () => void;
+  openModalDeleteNetwork: (id: string) => void;
+  closeModalDeleteNetwork: () => void;
+  openModalDeleteNode: (id: string) => void;
+  closeModalDeleteNode: () => void;
   loader: string;
   networks: Network[];
   nodes: NodesType[];
   account: string;
+  networkId: string;
+  nodeId: string;
+  setNodeId: (value: string) => void;
+  setNetworkId: (value: string) => void;
   setAccount: (value: string) => void;
   setNodes: (value: NodesType[]) => void;
   setNetworks: (value: Network[]) => void;
