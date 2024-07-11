@@ -11,6 +11,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
   const [isModalDelete, setIsModalDelete] = useState(false);
   const [nodes, setNodes] = useState<NodesType[]>([]);
   const [loader, setLoader] = useState("OFF");
+  const [loaderButton, setLoaderButton] = useState("OFF");
   const [networkId, setNetworkId] = useState<string>("");
 
   const openModalDeleteNetwork = (id: string) => {
@@ -49,11 +50,22 @@ const AppProvider = ({ children }: AppProviderProps) => {
       networkId,
       setNetworkId,
       nodeId,
+      loaderButton,
+      setLoaderButton,
       setNodeId,
       openModalDeleteNode,
       closeModalDeleteNode,
     }),
-    [isModalDelete, loader, networks, nodes, account, networkId, nodeId]
+    [
+      isModalDelete,
+      loader,
+      networks,
+      nodes,
+      account,
+      networkId,
+      nodeId,
+      loaderButton,
+    ]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
