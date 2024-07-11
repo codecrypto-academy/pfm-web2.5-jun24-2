@@ -1,7 +1,16 @@
 import { useAppContext } from "./useAppContext";
 
 export const useNodes = () => {
-  const { setNodes, nodes } = useAppContext()
+  const {
+    setNodes,
+    nodes,
+    openModalDeleteNode,
+    closeModalDeleteNode,
+    loader,
+    setLoader,
+    nodeId,
+    isModalDelete,
+  } = useAppContext();
 
   const startNode = async (id: string) => {
     try {
@@ -18,6 +27,7 @@ export const useNodes = () => {
       console.log(error);
     }
   };
+
   const stopNode = async (id: string) => {
     try {
       await fetch(`http://localhost:3000/api/node/${id}/stop`, {
@@ -52,11 +62,31 @@ export const useNodes = () => {
 
   const getNodes = async (id: string) => {
     try {
-       const res = await fetch(
-        `http://localhost:3000/api/network/${id}/nodes`
-      );
+      const res = await fetch(`http://localhost:3000/api/network/${id}/nodes`);
       const nodes = await res.json();
       setNodes(nodes);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteNode = async (id: string) => {
+    try {
+      setLoader("ON");
+      await fetch(`http://localhost:3000/api/node/${nodeId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: null,
+      });
+      setTimeout(() => {
+        setLoader("SUCCESS");
+      }, 1500);
+      setTimeout(() => {
+        closeModalDeleteNode();
+      }, 3500);
+      getNodes(id);
     } catch (error) {
       console.error(error);
     }
@@ -68,5 +98,12 @@ export const useNodes = () => {
     restartNode,
     getNodes,
     nodes,
+    deleteNode,
+    openModalDeleteNode,
+    closeModalDeleteNode,
+    loader,
+    nodeId,
+    setLoader,
+    isModalDelete,
   };
 };
