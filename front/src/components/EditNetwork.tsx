@@ -13,6 +13,7 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
       { name: "", type: "", ip: "", port: undefined },
     ],
   });
+  
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -55,16 +56,27 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await createNetwork(networkData).then(() => {
+    try {
+      await createNetwork(networkData);
       onBack();
-    });
+    } catch (error) {
+      console.error('Error creating network:', error);
+      setError('There was an error creating the network. Please try again.');
+    }
   };
+
+  const [error, setError] = useState<string | null>(null);
+
+
   const { createNetwork } = useNetwork();
   return (
     <form
       onSubmit={handleSubmit}
       className="bg-white shadow-sm ring-1 p-6 rounded-md mt-5 w-[725px]"
     >
+     
+      {error && <div className="error">{error}</div>}
+
       <div className="border-t-4 mt-3 py-5">
         <div className="w-[100%]">
           <div className="w-[100%] justify-center flexr flex-col">
@@ -223,9 +235,9 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
                   className="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
                   <option value="">Select Node Type</option>
-                  <option value="MINER">MINER</option>
-                  <option value="RPC">RPC</option>
-                  <option value="NORMAL">NORMAL</option>
+                  <option value="miner">MINER</option>
+                  <option value="rpc">RPC</option>
+                  <option value="normal">NORMAL</option>
                 </select>
               </div>
             </div>

@@ -13,8 +13,16 @@ import { createAccount, generateDockerCommandForNode, generateEnode, generateNod
 import { executeCommand } from '../common/ultils';
 
 async function createNetwork(req: Request, res: Response) {
+  var nuevoId:number = 0;
+  if (typeof req.body.chainId === 'string') {
+    nuevoId = Number(req.body.chainId);
+  }
+
+  console.log("ANTES:" , req.body.chainId)  
   const network:Network = req.body;
-  
+  network.chainId = nuevoId;
+  console.log("DESPUES:" , network.chainId)  
+  console.log("NETWORK: ", network)
   try {
     //validate if the network id exists
     await validateAndCreateNetwork(network);
@@ -59,12 +67,12 @@ function configureNodes(nodes: NetworkNode[]): NetworkNode[] {
   }
 
   // Filtrar los nodos mineros y no mineros
-  const minerNodes = nodes.filter(node => node.type === 'miner');
-  const nonMinerNodes = nodes.filter(node => node.type !== 'miner');
+  const minerNodes = nodes.filter(node => node.type.toLowerCase() === 'miner');
+  const nonMinerNodes = nodes.filter(node => node.type.toLowerCase() !== 'miner');
 
-  if (minerNodes.length < 2) {
-    throw new Error('Debe haber al menos dos nodos mineros.');
-  }
+  // if (minerNodes.length < 2) {
+  //   throw new Error('Debe haber al menos dos nodos mineros.');
+  // }
 
   // Configurar enodes para los nodos mineros
   for (let i = 0; i < minerNodes.length; i++) {
@@ -82,17 +90,6 @@ function configureNodes(nodes: NetworkNode[]): NetworkNode[] {
   return nodes;
 }
 //-----------------
-
-
-
-
-
-
-
-
-
-
-
 
 async function stopNetwork(req: Request, res: Response) {
   const { id } = req.params;
@@ -261,7 +258,6 @@ async function getGroupedNetworks() {
   return networksMap;
 }
 
-
 // account new
 const createAccounts = async (chainId: number, nodes: NetworkNode[]): Promise<void> => {
 
@@ -342,8 +338,6 @@ const addMinerAllocations = (alloc: Alloc[], nodes: NetworkNode[]): Alloc[] => {
   }
   return alloc;
 };
-
-
 
 // init
 async function initializeEthereumNodes(nodes: NetworkNode[], chainId: number): Promise<void> {
@@ -544,8 +538,14 @@ async function validateAndCreateNetwork(networkSettings: Network): Promise<void>
 function validateMinimumQtyOfNodes(network: Network) {
   try {
     
-    if (network.nodes.length < 2 || !network.nodes.some(node => node.type === 'miner')) {
-      throw new Error(`You need at least 2 nodes.`);
+    const normalizedNodes = network.nodes.map(node => ({
+      ...node,
+      type: node.type.toLowerCase()
+    }));
+
+    // Verifica que hay al menos 2 nodos y que al menos uno es de tipo 'miner'
+    if (normalizedNodes.length < 2 || !normalizedNodes.some(node => node.type === 'miner')) {
+      throw new Error('You need at least 2 nodes and at least one node of type "MINER".');
     }
 
     console.log(`Minimum quantity of nodes validated.`);

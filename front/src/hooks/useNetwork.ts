@@ -5,44 +5,16 @@ export const useNetwork = () => {
 
   const createNetwork = async (network: NetworkCreate) => {
     try {
+      console.log("Sending network data:", network);
       await fetch("http://localhost:3000/api/network", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-        },
-        // body: JSON.stringify({
-        //   id: "network333",
-        //   chainId: 2222,
-        //   subnet: "192.168.100.0/24",
-        //   alloc: [
-        //     {
-        //       address: "0x03A809f5AB398E113017286aC9B7Ce2B7ACCa65b",
-        //       balance: "100000000000000000000",
-        //     },
-        //   ],
-        //   nodes: [
-        //     {
-        //       name: "node1",
-        //       type: "miner",
-        //       ip: "192.168.100.2",
-        //       port: 9999,
-        //     },
-        //     {
-        //       name: "node2",
-        //       type: "rpc",
-        //       ip: "192.168.100.3",
-        //     },
-        //     {
-        //       name: "node3",
-        //       type: "miner",
-        //       ip: "192.168.100.4",
-        //     },
-        //   ],
-        // }),
+        },        
         body: JSON.stringify(network),
       });
-    } catch (error) {
-      console.error(error);
+    } catch (error:any) {
+      console.error(error.message);
     }
   };
 
