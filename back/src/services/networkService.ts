@@ -223,7 +223,6 @@ async function getGroupedNetworks() {
     const ipAddress = networkSettings.IPAddress;
 
     // Validación de gateway y networkId
-    console.log("NETWORK ID: ", networkId);
     if (!networksMap[networkId]) {
       networksMap[networkId] = {
         NetworkName: networkName,
@@ -259,7 +258,6 @@ async function getGroupedNetworks() {
     }
   });
 
-  console.log("MAP: ", networksMap);
   return networksMap;
 }
 
