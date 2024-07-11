@@ -18,11 +18,9 @@ async function createNetwork(req: Request, res: Response) {
     nuevoId = Number(req.body.chainId);
   }
 
-  console.log("ANTES:" , req.body.chainId)  
   const network:Network = req.body;
   network.chainId = nuevoId;
-  console.log("DESPUES:" , network.chainId)  
-  console.log("NETWORK: ", network)
+
   try {
     //validate if the network id exists
     await validateAndCreateNetwork(network);
@@ -47,11 +45,7 @@ async function createNetwork(req: Request, res: Response) {
 
     await getEnodes(network.nodes, network.chainId);
     
-    ////////////------------------------------------
-    console.log("ACAAAA")
     const nodesTest = configureNodes(network.nodes);
-    console.log("NODES TEST: ", nodesTest)
-
     await initializeNetworkNodes(network);
 
     res.status(200).send('Network initialized successfully');
@@ -60,7 +54,6 @@ async function createNetwork(req: Request, res: Response) {
   }
 }
 
-//-----------------
 function configureNodes(nodes: NetworkNode[]): NetworkNode[] {
   if (nodes.length < 2) {
     throw new Error('La lista de nodos debe contener al menos dos nodos.');
@@ -89,7 +82,6 @@ function configureNodes(nodes: NetworkNode[]): NetworkNode[] {
 
   return nodes;
 }
-//-----------------
 
 async function stopNetwork(req: Request, res: Response) {
   const { id } = req.params;
