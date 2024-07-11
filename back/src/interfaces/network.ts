@@ -6,6 +6,7 @@ export interface Network {
     name:string,
     chainId: number;    
     subnet: string;
+    status: string;
     ipBootnode: string;
     alloc: Alloc[];
     nodes: NetworkNode[];

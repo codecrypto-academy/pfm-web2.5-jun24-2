@@ -99,23 +99,19 @@ async function createAccount(nodes: NetworkNode[], index: number, chainId: numbe
   }
 }
 
-function generateDockerCommandForNode(node: NetworkNode, networkId: string, chainId: number, usedPorts: Set<number>): CommandNodePair {
+function generateDockerCommandForNode(node: NetworkNode, networkId: string, chainId: number, bootnodeEnode: string): CommandNodePair {
   const nodeName = getNodeName(node);
   const baseCommand = `docker run -d --name ${nodeName} --network ${networkId} --label ${networkId} --ip ${node.ip}`;
   const volumeMappings = `-v "${process.cwd()}/data/net${chainId}/${nodeName}:/root/.ethereum" -v "${process.cwd()}/data/pwd.txt:/root/.ethereum/password.txt"`;
   const ports = node.port ? `-p ${node.port}:8545` : '';
-  const alwaysPort = node.port && !usedPorts.has(30303) ? `-p 30303:30303` : '';
-  if (node.port) {
-    usedPorts.add(node.port);
-  }
   const baseGethCommand = `ethereum/client-go:v1.13.15 --networkid ${chainId}`;
   const minerConfig = node.type === 'miner' ? `--mine --miner.etherbase="${node.address}"` : '';
   const httpConfig = `--http --http.addr "0.0.0.0" --http.port 8545 --http.api "admin,eth,debug,miner,net,txpool,personal,web3" --http.corsdomain "*"`;
   const syncMode = `--syncmode "full"`;
   const unlockAccount = `--unlock "${node.address}" --password "/root/.ethereum/password.txt" --allow-insecure-unlock`;
-  const bootnode = `--bootnodes "${node.enode}"`;
+  const bootnode = `--bootnodes "${node.bootnodes}"`;
 
-  const command = `${baseCommand} ${volumeMappings} ${ports} ${alwaysPort} ${baseGethCommand} ${minerConfig} ${httpConfig} ${syncMode} --port 30303 ${unlockAccount} ${bootnode}`;
+  const command = `${baseCommand} ${volumeMappings} ${ports} ${baseGethCommand} ${minerConfig} ${httpConfig} ${syncMode} --port 30303 ${unlockAccount} ${bootnode}`;
   return { node, command };
 }
 

@@ -5,5 +5,6 @@ export interface NetworkNode {
     ip: string;
     port?: number;
     address: string,
-    enode:string
+    enode:string,
+    bootnodes?: string[];
 }

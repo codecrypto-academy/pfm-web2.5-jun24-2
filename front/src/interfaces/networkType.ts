@@ -8,6 +8,7 @@ interface NodesType {
 
 interface Network {
   NetworkName: string;
+  State: string;
   NetworkID: string;
   Gateway: string;
   IPAddress: string;

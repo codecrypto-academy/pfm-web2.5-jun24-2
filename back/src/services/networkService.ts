@@ -19,6 +19,8 @@ async function createNetwork(req: Request, res: Response) {
     //validate if the network id exists
     await validateAndCreateNetwork(network);
 
+    await validateMinimumQtyOfNodes(network);
+
     //validate nodes Ips
     validateNodesIP(network);
 
@@ -37,6 +39,11 @@ async function createNetwork(req: Request, res: Response) {
 
     await getEnodes(network.nodes, network.chainId);
     
+    ////////////------------------------------------
+    console.log("ACAAAA")
+    const nodesTest = configureNodes(network.nodes);
+    console.log("NODES TEST: ", nodesTest)
+
     await initializeNetworkNodes(network);
 
     res.status(200).send('Network initialized successfully');
@@ -44,6 +51,48 @@ async function createNetwork(req: Request, res: Response) {
     res.status(500).send(`Error initializing network: ${error}`);
   }
 }
+
+//-----------------
+function configureNodes(nodes: NetworkNode[]): NetworkNode[] {
+  if (nodes.length < 2) {
+    throw new Error('La lista de nodos debe contener al menos dos nodos.');
+  }
+
+  // Filtrar los nodos mineros y no mineros
+  const minerNodes = nodes.filter(node => node.type === 'miner');
+  const nonMinerNodes = nodes.filter(node => node.type !== 'miner');
+
+  if (minerNodes.length < 2) {
+    throw new Error('Debe haber al menos dos nodos mineros.');
+  }
+
+  // Configurar enodes para los nodos mineros
+  for (let i = 0; i < minerNodes.length; i++) {
+    const currentNode = minerNodes[i];
+    const nextNode = minerNodes[(i + 1) % minerNodes.length]; // Circular reference to next miner node
+    currentNode.bootnodes = [nextNode.enode];
+  }
+
+  // Configurar bootnodes para nodos no mineros
+  const minerEnodes = minerNodes.map(node => node.enode);
+  for (const node of nonMinerNodes) {
+    node.bootnodes = minerEnodes;
+  }
+
+  return nodes;
+}
+//-----------------
+
+
+
+
+
+
+
+
+
+
+
 
 async function stopNetwork(req: Request, res: Response) {
   const { id } = req.params;
@@ -159,9 +208,14 @@ async function listNodes(req: Request, res: Response) {
 
 async function getGroupedNetworks() {
   const containers = await listContainers();
+  // console.log("CONTAINERS", containers)
   const networksMap: { [networkId: string]: any } = {};
 
   containers.forEach(container => {
+    if (container.Image !== "ethereum/client-go:v1.13.15") {
+      return; // Filtrar contenedores que no usan la imagen especificada
+    }
+
     const networkName = Object.keys(container.NetworkSettings.Networks)[0];
     const networkSettings = container.NetworkSettings.Networks[networkName];
     const networkId = networkSettings.NetworkID;
@@ -169,29 +223,46 @@ async function getGroupedNetworks() {
     const ipAddress = networkSettings.IPAddress;
 
     // Validación de gateway y networkId
-    if (gateway && networkId) {
-      if (!networksMap[networkId]) {
-        networksMap[networkId] = {
-          NetworkName: networkName,
-          NetworkID: networkId,
-          Gateway: gateway,
-          IPAddress: ipAddress,
-          Nodes: []
-        };
-      }
+    console.log("NETWORK ID: ", networkId);
+    if (!networksMap[networkId]) {
+      networksMap[networkId] = {
+        NetworkName: networkName,
+        NetworkID: networkId,
+        Gateway: gateway,
+        IPAddress: ipAddress,
+        Nodes: []
+      };
+    }
 
-      networksMap[networkId].Nodes.push({
-        Id: container.Id,
-        Name: container.Names[0],
-        Status: container.Status,
-        State: container.State,
-        IPAddress: ipAddress
-      });
+    // Asegurarse de agregar cada nodo correctamente
+    networksMap[networkId].Nodes.push({
+      Id: container.Id,
+      Name: container.Names[0],
+      Status: container.Status,
+      State: container.State,
+      IPAddress: ipAddress
+    });
+  });
+
+  // Determinar el estado de cada red
+  Object.values(networksMap).forEach(network => {
+    const nodes = network.Nodes;
+    const allRunning = nodes.every((node: { State: string; }) => node.State === "running");
+    const anyRunning = nodes.some((node: { State: string; }) => node.State === "running");
+
+    if (allRunning) {
+      network.State = "Running";
+    } else if (anyRunning) {
+      network.State = "Partially Running";
+    } else {
+      network.State = "Stopped";
     }
   });
 
+  console.log("MAP: ", networksMap);
   return networksMap;
 }
+
 
 // account new
 const createAccounts = async (chainId: number, nodes: NetworkNode[]): Promise<void> => {
@@ -304,7 +375,6 @@ async function getEnodes(nodes: NetworkNode[], chainId:number) {
   await Promise.all(promises);
 }
 
-
 async function initializeNetworkNodes(network: Network) {
   const promises: Promise<void>[] = [];
   const commandNodePairs = generateDockerCommands(network);
@@ -318,8 +388,16 @@ async function initializeNetworkNodes(network: Network) {
 }
 
 function generateDockerCommands(network: Network): CommandNodePair[] {
-  const usedPorts = new Set<number>();
-  return network.nodes.map(node => generateDockerCommandForNode(node, network.id, network.chainId, usedPorts));
+  const bootnode = network.nodes.find(node => node.port != null);
+
+  if (!bootnode) {
+    throw new Error("No se encontró un nodo con 'node.port' definido.");
+  }
+
+  const bootnodeEnode = bootnode.enode;
+
+  // Generar comandos para todos los nodos usando el enode del nodo identificado
+  return network.nodes.map(node => generateDockerCommandForNode(node, network.id, network.chainId, bootnodeEnode));
 }
 
 async function addNewNodes(req: Request, res: Response) {
@@ -406,6 +484,7 @@ async function validateNodesInNetwork(network: Network): Promise<void> {
 
   console.log(`All nodes are valid and do not already exist in the network ${networkName}.`);
 }
+
 async function validateNetworkExists(network: Network): Promise<void> {
   const networkName = network.id;
 
@@ -464,6 +543,20 @@ async function validateAndCreateNetwork(networkSettings: Network): Promise<void>
   }
 }
 
+function validateMinimumQtyOfNodes(network: Network) {
+  try {
+    
+    if (network.nodes.length < 2 || !network.nodes.some(node => node.type === 'miner')) {
+      throw new Error(`You need at least 2 nodes.`);
+    }
+
+    console.log(`Minimum quantity of nodes validated.`);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 function validateNodesIP(network: Network): void {
   const subnetInfo = ip.subnet(network.subnet.split('/')[0], network.subnet.split('/')[1]);
   const broadcastAddress = subnetInfo.broadcastAddress;
@@ -487,3 +580,5 @@ export {
   listNodes,
   addNewNodes
 };
+
+

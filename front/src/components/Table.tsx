@@ -7,8 +7,10 @@ export const Table = ({ networks }: { networks: Network[] }) => {
   const { stopNetwork, startNetwork, restartNetwork } = useNetwork();
   const { openModalDeleteNetwork } = useAppContext();
 
+
+
   return (
-    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg w-[725px]">
+    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg w-[1000px]">
       <table className="min-w-full divide-y divide-gray-300">
         <thead className="bg-gray-50">
           <tr>
@@ -51,15 +53,15 @@ export const Table = ({ networks }: { networks: Network[] }) => {
                 {network.NetworkName}
               </td>
               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                {network.Gateway}
+                {network.IPAddress}
               </td>
               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                {network.IPAddress}
+                {network.State}
               </td>
               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 flex w-60 flex-wrap justify-center items-center gap-3">
                 <button
                   className="bg-[#32e4f0] w-24 h-11 text-white"
-                  onClick={() => startNetwork(network.NetworkID)}
+                  onClick={() => handleStartNetwork(startNetwork, network)}
                 >
                   UP
                 </button>
@@ -105,3 +107,8 @@ export const Table = ({ networks }: { networks: Network[] }) => {
     </div>
   );
 };
+
+async function handleStartNetwork(startNetwork: (id: string) => Promise<void>, network: Network): Promise<void> {
+  await startNetwork(network.NetworkID);
+}
+
