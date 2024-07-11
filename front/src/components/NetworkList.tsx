@@ -41,7 +41,7 @@ export const ListNetworks: React.FC = () => {
   return (
     <>
       {showEdit && (
-        <div className="slide-in">
+        <div className="slide-in flex justify-center">
           <EditNetwork onBack={handleBack} />
         </div>
       )}
@@ -54,7 +54,10 @@ export const ListNetworks: React.FC = () => {
           ADD NETWORK
         </button>)}
       </div>
-      <Table networks={networks} />
+      {networks.length === 0 && <h3 className="text-center mt-10 text-3xl text-white m-auto"
+      > THERE ARE NO NETWORKS TO DISPLAY, PLEASE ADD A NETWORK
+        </h3>}
+      {networks.length > 0 && <Table networks={networks} />}
     </>
   );
 };
