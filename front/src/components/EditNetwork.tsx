@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { NetworkCreate } from "../interfaces/networkCreate";
+import { Allocation, NetworkCreate, Node } from "../interfaces/networkCreate";
 import { useNetwork } from "../hooks/useNetwork";
+import { Loader } from "./Loader";
 
 const EditNetwork = ({ onBack }: { onBack: () => void }) => {
   const [networkData, setNetworkData] = useState<NetworkCreate>({
@@ -13,7 +14,10 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
       { name: "", type: "", ip: "", port: undefined },
     ],
   });
-  
+
+  const [error, setError] = useState<string | null>(null);
+  const { createNetwork, setErrorAPI, errorAPI, typeLoader, loaderButton } =
+    useNetwork();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -24,19 +28,20 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
     setNetworkData((prevData) => {
       if (field in prevData) {
         return { ...prevData, [field]: value };
-      } else if (field.startsWith("alloc")) {
+      } else if (field.startsWith("alloc.")) {
         const newAlloc = [...prevData.alloc];
-        newAlloc[index!][field.split(".")[1]] = value;
+        const allocField = field.split(".")[1] as keyof Allocation;
+        newAlloc[index!][allocField] = value;
         return { ...prevData, alloc: newAlloc };
-      } else if (field.startsWith("nodes")) {
+      } else if (field.startsWith("nodes.")) {
         const newNodes = [...prevData.nodes];
-        newNodes[index!][field.split(".")[1]] = value;
+        const nodeField = field.split(".")[1] as keyof Node;
+        (newNodes[index!] as any)[nodeField] = value;
         return { ...prevData, nodes: newNodes };
       }
       return prevData;
     });
   };
-
   const handleAddAlloc = () => {
     setNetworkData((prevData) => ({
       ...prevData,
@@ -56,19 +61,21 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null); // Clear previous error
     try {
       await createNetwork(networkData);
       onBack();
-    } catch (error) {
-      console.error('Error creating network:', error);
-      setError('There was an error creating the network. Please try again.');
+    } catch (err) {
+      setErrorAPI({ error: (err as Error).message, type: "CREATE_NETWORK" });
     }
   };
-
-  const [error, setError] = useState<string | null>(null);
-
-
-  const { createNetwork } = useNetwork();
+  const validateLoader = (type: string, text: string) => {
+    if (typeLoader === type && loaderButton === "ON") {
+      return <Loader />;
+    }
+    return text;
+  };
+  console.log(loaderButton);
   return (
     <form
       onSubmit={handleSubmit}
@@ -161,7 +168,6 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
                   type="text"
                   value={alloc.address}
                   onChange={(e) => handleChange(e, `alloc.address`, index)}
-                  required
                   className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
                 />
               </div>
@@ -180,7 +186,6 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
                   type="text"
                   value={alloc.balance}
                   onChange={(e) => handleChange(e, `alloc.balance`, index)}
-                  required
                   className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
                 />
               </div>
@@ -271,7 +276,7 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
                   id={`nodePort${index}`}
                   name={`nodePort${index}`}
                   type="number"
-                  value={node.port || ""}
+                  value={node.port ?? ""}
                   onChange={(e) => handleChange(e, `nodes.port`, index)}
                   className="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 p-2 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-[100%]"
                 />
@@ -287,17 +292,27 @@ const EditNetwork = ({ onBack }: { onBack: () => void }) => {
           Add Node
         </button>
       </div>
-
+      {error && (
+        <div className="bg-red-100 text-red-700 p-4 rounded-md mt-4">
+          {error}
+        </div>
+      )}
+      {errorAPI?.error && (
+        <div className="bg-red-100 text-red-700 p-4 rounded-md mt-4">
+          {errorAPI.error}
+        </div>
+      )}
       <div className="mt-4 w-[100%]">
         <button
           type="submit"
           className="bg-[#32e4f0] h-11 text-white mt-7 p-2 w-full text-center"
         >
-          SUBMIT
+          {validateLoader("CREATE", "SUBMIT")}
+          {/* SUBMIT */}
         </button>
         <button
           type="button"
-          className="bg-[#155163] border-2 border-[#32e4f0] text-[#32e4f0] h-11  mt-7 p-2 w-full text-center"
+          className="bg-[#155163] border-2 border-[#32e4f0] text-[#32e4f0] h-11 mt-7 p-2 w-full text-center"
           onClick={onBack}
         >
           CANCEL

@@ -13,6 +13,8 @@ interface AppContextType {
   account: string;
   networkId: string;
   nodeId: string;
+  loaderButton : string;
+  setLoaderButton : (value: string) => void;
   setNodeId: (value: string) => void;
   setNetworkId: (value: string) => void;
   setAccount: (value: string) => void;
